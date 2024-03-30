@@ -48,21 +48,44 @@ body, html {
   align-items: center;
   position: absolute;
   top: 20px;
+  bottom: 20px;
   right: 10px;
   z-index: 1;
   width: 30%;
-  height: 80%;
   background-color: white;
   border-radius: 10px;
   filter: drop-shadow(0 0 0.75rem lightgray);
 }
 
 #graphWrapper {
-  height: 100vh; /* Set the height to 100% of the viewport height */
+  height: 100%; /* Set the height to 100% of the viewport height */
   width: 100vw; /* Set the width to 100% of the viewport width */
   background-color:#F8F8F8;
+  position: absolute;
 }
 
 #chartWrapper {
   margin-top: 10px;
+}
+
+#mmifPanel {
+  margin-top: 25px;
+  text-align: center;
+}
+
+.panel-header {
+  background-color: lightgray;
+  padding: 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+.fa-square-caret-down.rotated {
+  transform: rotate(180deg);
+}
+
+.panel-content {
+  padding: 20px;
 }

@@ -1,12 +1,13 @@
 // let hoveredCLAMSApp = null;
+let clickedNode = null;
 
 // Define the data for nodes and links
 const nodes = [
-    { id: 'node1', label: 'ocr1.mmif', apps: ['doctr-wrapper']},
-    { id: 'node2', label: 'swt1.mmif', apps: ['swt-detection', 'doctr-wrapper']},
-    { id: 'node3', label: 'ner.mmif', apps: ['spacy-wrapper']},
-    { id: 'node4', label: 'ex.mmif', apps: [] },
-    { id: 'node5', label: 'swt-rfb.mmif', apps: ['swt-detection', 'doctr-wrapper', 'role-filler-binder'] }
+    { id: 'node1', label: 'ocr1.mmif', apps: ['doctr-wrapper'], summary: "This is an example summary for ocr1.mmif"},
+    { id: 'node2', label: 'swt1.mmif', apps: ['swt-detection', 'doctr-wrapper'], summary: "This is an example summary for swt1.mmif"},
+    { id: 'node3', label: 'ner.mmif', apps: ['spacy-wrapper'], summary: "This is an example summary for ner1.mmif"},
+    { id: 'node4', label: 'ex.mmif', apps: [], summary: "This is an example summary for ex.mmif" },
+    { id: 'node5', label: 'swt-rfb.mmif', apps: ['swt-detection', 'doctr-wrapper', 'role-filler-binder'], summary: "This is an example summary for swt-rfb.mmif" }
 ];
 
 const links = [
@@ -104,6 +105,7 @@ node.append('text')
 // Add click event listener to links
 circles.on('click', (event, d) => {
     event.stopPropagation();
+    updatePanel(d.id);
 });
 
 

@@ -1,37 +1,50 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Dynamic Graph Node View</title>
-  <script src="https://d3js.org/d3.v6.min.js"></script>
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      overflow: hidden;
-    }
-  </style>
+    <title>Dynamic Graph Node View</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://kit.fontawesome.com/4cfc692a2d.js" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-  <div id="graphWrapper">
-    <!-- Pie chart (placeholder for Kibana) -->
-    <div id="statsPanel">
-      <div id="chartWrapper">
-        <canvas id="pieChart"></canvas>
-      </div>
+    <div id="graphWrapper">
+        <!-- Pie chart (placeholder for Kibana) -->
+        <div id="statsPanel">
+            <div id="chartWrapper">
+                <canvas id="pieChart"></canvas>
+            </div>
+            <!-- Placeholder for mmif view panel -->
+            <div id="mmifPanel" data-panel-state="closed">
+                <div class="panel-header">
+                    <p>No MMIF File Selected</p>
+                </div>
+                <div class="panel-content"></div>
+            </div>
+        </div>
     </div>
 
     <!-- Load Chart.js library first -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <script src="{{ url_for('static', filename='chart.js') }}"></script>
+    <script src="{{ url_for('static', filename='mmif-panel.js') }}"></script>
 
     <!-- Node View -->
     <script type="text/html" id="mmif-node-template">
-      {% include 'mmif_node.html' %}
+        {% include 'mmif_node.html' %}
     </script>
     <script src="{{ url_for('static', filename='graph.js') }}"></script>
-</div>
+
+    <script>
+        $(document).ready(function() {
+            $('#mmifPanel').data('panel-state', 'closed');
+            var panelContent = $('#mmifPanel').find(".panel-content");
+            panelContent.slideToggle("fast");
+
+            $("#statsPanel").resizable({handles: "w", minWidth: 300});
+        });
+    </script>
 </body>
 </html>
