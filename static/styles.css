@@ -1,0 +1,68 @@
+.node {
+    fill: radial-gradient(lightblue, white);
+    stroke: #000;
+    stroke-width: 0.5px;
+  }
+
+.mmif-filename {
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  font-size: 20px;
+  text-shadow: -1px 1px 0 white,
+  1px 1px 0 white,
+  1px -1px 0 white,
+  -1px -1px 0 white;}
+
+.mmif-filename:hover {
+  cursor: default;
+}
+
+.node:hover {
+  fill: #FFC0CB;
+  cursor: pointer;
+}
+
+.tooltip {
+  position: absolute;
+  text-align: center;
+  padding: 2px;
+  font: 12px sans-serif;
+  background: lightsteelblue;
+  border: 0px;
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.link {
+  stroke-opacity: 0.6;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+#statsPanel {
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 20px;
+  right: 10px;
+  z-index: 1;
+  width: 30%;
+  height: 80%;
+  background-color: white;
+  border-radius: 10px;
+  filter: drop-shadow(0 0 0.75rem lightgray);
+}
+
+#graphWrapper {
+  height: 100vh; /* Set the height to 100% of the viewport height */
+  width: 100vw; /* Set the width to 100% of the viewport width */
+  background-color:#F8F8F8;
+}
+
+#chartWrapper {
+  margin-top: 10px;
+}
