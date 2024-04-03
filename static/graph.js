@@ -122,17 +122,20 @@ const simulation = d3.forceSimulation()
 // Drag functions
 function dragStarted(event, d) {
     if (!event.active) simulation.alphaTarget(0.3).restart();
-    d.fx = d.x;
-    d.fy = d.y;
+    // d.fx = d.x;
+    // d.fy = d.y;
 }
 
 function dragged(event, d) {
+    hasBeenDragged = true;
     d.fx = event.x;
     d.fy = event.y;
 }
 
 function dragEnded(event, d) {
-    if (!event.active) simulation.alphaTarget(0);
+    if (!event.active && hasBeenDragged) simulation.alphaTarget(0);
+    // if (!hasBeenDragged) simulation.force(0);
+    hasBeenDragged = false;
     d.fx = null;
     d.fy = null;
 }
