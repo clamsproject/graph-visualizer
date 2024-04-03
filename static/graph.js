@@ -3,21 +3,21 @@ let clickedNode = null;
 
 // Define the data for nodes and links
 const nodes = [
-    { id: 'node1', label: 'ocr1.mmif', apps: ['doctr-wrapper'], summary: "This is an example summary for ocr1.mmif"},
-    { id: 'node2', label: 'swt1.mmif', apps: ['swt-detection', 'doctr-wrapper'], summary: "This is an example summary for swt1.mmif"},
-    { id: 'node3', label: 'ner.mmif', apps: ['spacy-wrapper'], summary: "This is an example summary for ner1.mmif"},
-    { id: 'node4', label: 'ex.mmif', apps: [], summary: "This is an example summary for ex.mmif" },
-    { id: 'node5', label: 'swt-rfb.mmif', apps: ['swt-detection', 'doctr-wrapper', 'role-filler-binder'], summary: "This is an example summary for swt-rfb.mmif" }
-];
-
-const links = [
+    { id: 'node1', label: 'ocr1.mmif', apps: ['doctr-wrapper'], summary: "This broadcast segment explores the congressional oversight and regulation of major pizza delivery companies, including Pizza Hut, Papa John's, and Domino's, and their business practices.", entities: ['Pizza Hut', "Papa John's", "Domino's", 'Congress'] },
+    { id: 'node2', label: 'swt1.mmif', apps: ['swt-detection', 'doctr-wrapper'], summary: "This news report analyzes the operations and market strategies of Pizza Hut, Papa John's, and Domino's within the United States, with a focus on their delivery services and presence across the country.", entities: ['Pizza Hut', "Papa John's", "Domino's", 'United States'] },
+    { id: 'node3', label: 'ner.mmif', apps: ['spacy-wrapper'], summary: "This broadcast segment utilizes named entity recognition techniques to explore various entities and organizations involved in the United States.", entities: ['United States'] },
+    { id: 'node4', label: 'ex.mmif', apps: [], summary: "No summary available.", entities: [] },
+    { id: 'node5', label: 'swt-rfb.mmif', apps: ['swt-detection', 'doctr-wrapper', 'role-filler-binder'], summary: "This news report examines the role of Congress in regulating and overseeing the pizza delivery industry in the United States.", entities: ['Congress'] }
+ ];
+ 
+ const links = [
     { source: 'node1', target: 'node2', weight: 3, sharedEntities: ['Pizza Hut', "Papa John's", "Domino's"] },
     { source: 'node2', target: 'node3', weight: 1, sharedEntities: ['United States'] },
     // { source: 'node3', target: 'node4' },
     // { source: 'node4', target: 'node5' },
     { source: 'node5', target: 'node1', weight: 1, sharedEntities: ['Congress'] }
-];
-
+ ];
+ 
 // Set up the dimensions and margins of the graph
 const page_width = window.innerWidth;
 const page_height = window.innerHeight;
@@ -65,7 +65,7 @@ linkOverlay.on('mouseover', function (event, d) {
         .duration(200)
         .style('opacity', .9);
 
-    const entityHeader = `<h3>Shared Entities</h3>`;
+    const entityHeader = `<h3><b>Shared Entities</b></h3><br>`;
     const sharedEntities = entityHeader + d.sharedEntities.map(line => `<p>${line}</p>`).join('');
     tooltip.html(sharedEntities)
         .style('left', (event.pageX + 10) + 'px')
