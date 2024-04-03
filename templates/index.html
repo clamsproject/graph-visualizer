@@ -8,6 +8,12 @@
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"/>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css"
+    >
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
     <div id="graphWrapper">
@@ -17,12 +23,35 @@
                 <canvas id="pieChart"></canvas>
             </div>
             <!-- Placeholder for mmif view panel -->
-            <div id="mmifPanel" data-panel-state="closed">
+            <div class="card" style="margin: 10px; margin-top: 25px;">
+                <header class="card-header">
+                    <p class="card-header-title">No file selected</p>
+                    <button class="card-header-icon" aria-label="more options">
+                      <span class="icon">
+                        <i class="fas fa-angle-down" aria-hidden="true"></i>
+                      </span>
+                    </button>
+                  </header>
+                  <div class="card-content is-hidden">
+                    <div class="content">
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec
+                      iaculis mauris.
+                      <a href="#">@bulmaio</a>. <a href="#">#css</a> <a href="#">#responsive</a>
+                      <br />
+                      <time datetime="2016-1-1">11:09 PM - 1 Jan 2016</time>
+                    </div>
+                  </div>
+                  <footer class="card-footer is-hidden">
+                    <a href="#" class="card-footer-item">Visualize</a>
+                    <a href="#" class="card-footer-item" style="color: #ff6384">Delete</a>
+                  </footer>              
+                </div>
+            <!-- <div id="mmifPanel" data-panel-state="closed">
                 <div class="panel-header">
                     <p>No MMIF File Selected</p>
                 </div>
                 <div class="panel-content"></div>
-            </div>
+            </div> -->
         </div>
     </div>
 
@@ -46,5 +75,16 @@
             $("#statsPanel").resizable({handles: "w", minWidth: 300});
         });
     </script>
+
+    <!-- <section class="section">
+        <div class="container">
+        <h1 class="title">
+            Hello World
+        </h1>
+        <p class="subtitle">
+            My first website with <strong>Bulma</strong>!
+        </p>
+        </div>
+    </section> -->
 </body>
 </html>

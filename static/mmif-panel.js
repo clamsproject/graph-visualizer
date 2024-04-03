@@ -1,5 +1,8 @@
+var chosenMMIF = null;
+cardIsOpen = false;
+
 $(document).ready(function() {
-    $('#mmifPanel').data('panel-state', 'closed');
+    $('.card-content').data('panel-state', 'closed');
     var panelContent = $('#mmifPanel').find(".panel-content");
     panelContent.slideToggle();
   });
@@ -30,12 +33,18 @@ $(".panel-header").click(function(){
 
 function updatePanel(id) {
     const mmifContent = getMMIFFromID(id)
-    const dropdownCaret = '<i class="fa-regular fa-square-caret-down fa-xl"></i>'
-    $(".panel-header").html(function(){
-        return `<p>${mmifContent['label']}</p>${dropdownCaret}`
+    entities = mmifContent['entities']
+    entityTags = []
+    entities.forEach(entity => {entityTags.push(`<span class="tag is-primary">${entity}</span>`)})
+    entityTags = entityTags.join(" ")
+    if (!cardIsOpen) {
+        toggleCardOpen()
+    }
+    $(".card-header-title").html(function(){
+        return `${mmifContent['label']}`
     })
-    $(".panel-content").html(function(){
-        return `<p>SUMMARY:</p><p>${mmifContent['summary']}</p><a href="/">Visualize file</a>`
+    $(".content").html(function(){
+        return `<p>SUMMARY:</p><p>${mmifContent['summary']}</p>${entityTags}`
     })
 }
 
@@ -46,7 +55,31 @@ window.onload = function() {
 function getMMIFFromID(id) {
     for (elem of nodes) {
         if (elem["id"] === id) {
+            chosenMMIF = elem;
             return elem
         }
     }
+}
+
+// Get the card elements
+const card = document.querySelector('.card');
+const cardHeader = card.querySelector('.card-header');
+const cardContent = card.querySelector('.card-content');
+const cardFooter = card.querySelector('.card-footer');
+const icon = cardHeader.querySelector('.fa-angle-down');
+
+// Add a click event listener to the card header
+cardHeader.addEventListener('click', toggleCardOpen);
+
+function toggleCardOpen() {
+  // Toggle the visibility of the card content and footer
+  if (chosenMMIF == null) return;
+  cardContent.classList.toggle('is-hidden');
+  cardFooter.classList.toggle('is-hidden');
+
+  // Toggle the icon in the card header
+  icon.classList.toggle('fa-angle-down');
+  icon.classList.toggle('fa-angle-up');
+
+  cardIsOpen = !cardIsOpen;
 }
