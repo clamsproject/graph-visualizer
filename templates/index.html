@@ -6,6 +6,12 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://kit.fontawesome.com/4cfc692a2d.js" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css"
+        type="text/css"
+    />
     <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"/>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
     <link
@@ -16,7 +22,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-    <div id="graphWrapper">
+    <div id="graphWrapper" class="dropzone">
+        <div class="titleContainer">
+            <p class="title">Graph Visualizer</p>
+            <p class="subtitle">Drag a MMIF file anywhere to upload</p>
+        </div>
+
         <!-- Pie chart (placeholder for Kibana) -->
         <div id="statsPanel">
             <div id="chartWrapper">
@@ -46,12 +57,6 @@
                     <a href="#" class="card-footer-item" style="color: #ff6384">Delete</a>
                   </footer>              
                 </div>
-            <!-- <div id="mmifPanel" data-panel-state="closed">
-                <div class="panel-header">
-                    <p>No MMIF File Selected</p>
-                </div>
-                <div class="panel-content"></div>
-            </div> -->
         </div>
     </div>
 
@@ -73,18 +78,30 @@
             panelContent.slideToggle("fast");
 
             $("#statsPanel").resizable({handles: "w", minWidth: 300});
+            $(".dz-hidden-input").prop("disabled",true);
         });
     </script>
 
-    <!-- <section class="section">
-        <div class="container">
-        <h1 class="title">
-            Hello World
-        </h1>
-        <p class="subtitle">
-            My first website with <strong>Bulma</strong>!
-        </p>
-        </div>
-    </section> -->
+    <script>
+        // Dropzone has been added as a global variable.
+        const dropzone = new Dropzone(".dropzone", {
+            url: "/upload",
+            // dictDefaultMessage: "",
+            addedfile: function(file) {
+                // Highlight the edges when a file is added
+                addTempFile(file.name);
+            },
+            removedfile: function(file) {
+                // Remove the highlight when the file is removed
+                document.body.classList.remove('dz-drag-hover');
+            },
+            success: function(file, response) {
+                updateNodes(response);
+            }
+        });
+
+        // Remove message below dragzone (there's probably a better way to do this)
+        $(".dz-message").remove();
+    </script>
 </body>
 </html>
