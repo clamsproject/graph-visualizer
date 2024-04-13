@@ -1,23 +1,22 @@
-// let hoveredCLAMSApp = null;
 let clickedNode = null;
 
 // Define the data for nodes and links
-const nodes = [
-    { id: 'node1', label: 'ocr1.mmif', apps: ['doctr-wrapper'], summary: "This broadcast segment explores the congressional oversight and regulation of major pizza delivery companies, including Pizza Hut, Papa John's, and Domino's, and their business practices.", entities: ['Pizza Hut', "Papa John's", "Domino's", 'Congress'] },
-    { id: 'node2', label: 'swt1.mmif', apps: ['swt-detection', 'doctr-wrapper'], summary: "This news report analyzes the operations and market strategies of Pizza Hut, Papa John's, and Domino's within the United States, with a focus on their delivery services and presence across the country.", entities: ['Pizza Hut', "Papa John's", "Domino's", 'United States'] },
-    { id: 'node3', label: 'ner.mmif', apps: ['spacy-wrapper'], summary: "This broadcast segment utilizes named entity recognition techniques to explore various entities and organizations involved in the United States.", entities: ['United States'] },
-    { id: 'node4', label: 'ex.mmif', apps: [], summary: "No summary available.", entities: [] },
-    { id: 'node5', label: 'swt-rfb.mmif', apps: ['swt-detection', 'doctr-wrapper', 'role-filler-binder'], summary: "This news report examines the role of Congress in regulating and overseeing the pizza delivery industry in the United States.", entities: ['Congress'] }
- ];
- 
- const links = [
-    { source: 'node1', target: 'node2', weight: 3, sharedEntities: ['Pizza Hut', "Papa John's", "Domino's"] },
-    { source: 'node2', target: 'node3', weight: 1, sharedEntities: ['United States'] },
-    // { source: 'node3', target: 'node4' },
-    // { source: 'node4', target: 'node5' },
-    { source: 'node5', target: 'node1', weight: 1, sharedEntities: ['Congress'] }
- ];
- 
+var nodes = [
+    { id: 'node1', label: 'ocr1.mmif', apps: ['doctr-wrapper'], summary: "This broadcast segment explores the congressional oversight and regulation of major pizza delivery companies, including Pizza Hut, Papa John's, and Domino's, and their business practices.", entities: ['Pizza Hut', "Papa John's", "Domino's", 'Congress'], 'temp': false },
+    { id: 'node2', label: 'swt1.mmif', apps: ['swt-detection', 'doctr-wrapper'], summary: "This news report analyzes the operations and market strategies of Pizza Hut, Papa John's, and Domino's within the United States, with a focus on their delivery services and presence across the country.", entities: ['Pizza Hut', "Papa John's", "Domino's", 'United States'], 'temp': false },
+    { id: 'node3', label: 'ner.mmif', apps: ['spacy-wrapper'], summary: "This broadcast segment utilizes named entity recognition techniques to explore various entities and organizations involved in the United States.", entities: ['United States'], 'temp': false },
+    { id: 'node4', label: 'ex.mmif', apps: [], summary: "No summary available.", entities: [], 'temp': false},
+    { id: 'node5', label: 'swt-rfb.mmif', apps: ['swt-detection', 'doctr-wrapper', 'role-filler-binder'], summary: "This news report examines the role of Congress in regulating and overseeing the pizza delivery industry in the United States.", entities: ['Congress'], 'temp': false}
+];
+
+// const links = [
+//     { source: 'node1', target: 'node2', weight: 3, sharedEntities: ['Pizza Hut', "Papa John's", "Domino's"] },
+//     { source: 'node2', target: 'node3', weight: 1, sharedEntities: ['United States'] },
+//     // { source: 'node3', target: 'node4' },
+//     // { source: 'node4', target: 'node5' },
+//     { source: 'node5', target: 'node1', weight: 1, sharedEntities: ['Congress'] }
+// ];
+
 // Set up the dimensions and margins of the graph
 const page_width = window.innerWidth;
 const page_height = window.innerHeight;
@@ -37,87 +36,138 @@ const colorScale = d3.scaleLinear()
     .range(['#999', '#333'])
     .clamp(true);
 
-// Add the links
-const link = svg.selectAll('.link')
-    .data(links)
-    .enter()
-    .append('line')
-    .attr('class', 'link')
-    .attr('stroke-width', d => d.weight || 1)
-    .attr('stroke', d => colorScale(d.weight)); // Set stroke color based on weight
+let links;
+let link;
+let linkOverlay;
 
-// Add the link overlay
-const linkOverlay = svg.selectAll('.linkOverlay')
-    .data(links)
-    .enter()
-    .append('line')
-    .attr('class', 'linkOverlay')
-    .attr('stroke-width', 25)
-    .attr('stroke', 'transparent');
+function setLinks() {
+    // TODO: Set links dynamically
+    $(".link").remove();
+    // Add the links
+    links = []
+    for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+            const sharedEntities = nodes[i].entities.filter(entity => nodes[j].entities.includes(entity));
+            if (sharedEntities.length > 0) {
+                links.push({ source: nodes[i].id, target: nodes[j].id, weight: sharedEntities.length, sharedEntities: sharedEntities });
+            }
+        }
+    }
 
-const tooltip = d3.select('body')
-    .append('div')
-    .attr('class', 'tooltip')
-    .style('opacity', 0);
+    console.log(links);
 
-linkOverlay.on('mouseover', function (event, d) {
-    tooltip.transition()
-        .duration(200)
-        .style('opacity', .9);
+    link = svg.selectAll('.link')
+        .data(links)
+        .enter()
+        .append('line')
+        .attr('class', 'link')
+        .attr('stroke-width', d => d.weight || 1)
+        .attr('stroke', d => colorScale(d.sharedEntities.length)); // Set stroke color based on weight
+}
+function setLinkOverlays() {
+    $(".linkOverlay").remove();
 
-    const entityHeader = `<h3><b>Shared Entities</b></h3><br>`;
-    const sharedEntities = entityHeader + d.sharedEntities.map(line => `<p>${line}</p>`).join('');
-    tooltip.html(sharedEntities)
-        .style('left', (event.pageX + 10) + 'px')
-        .style('top', (event.pageY - 28) + 'px')
-        .style('height', 'auto')
-        .style('width', 'auto');
-})
-    .on('mouseout', function (d) {
+    // Add a wider overlay behind the links to make it easier to hover over them
+    linkOverlay = svg.selectAll('.linkOverlay')
+        .data(links)
+        .enter()
+        .append('line')
+        .attr('class', 'linkOverlay')
+        .attr('stroke-width', 25)
+        .attr('stroke', 'transparent');
+
+    linkOverlay.on('mouseover', function (event, d) {
         tooltip.transition()
-            .duration(500)
-            .style('opacity', 0);
-    });
+            .duration(200)
+            .attr('class', 'tooltip active')
+            .style('opacity', .9);
+
+        const entityHeader = `<h3><b>Shared Entities</b></h3><br>`;
+        const sharedEntities = entityHeader + d.sharedEntities.map(line => `<p>${line}</p>`).join('');
+        tooltip.html(sharedEntities)
+            .style('left', (event.pageX + 10) + 'px')
+            .style('top', (event.pageY - 28) + 'px')
+            .style('height', 'auto')
+            .style('width', 'auto');
+    })
+        .on('mouseout', function (d) {
+            tooltip.transition()
+                .duration(500)
+                .style('opacity', 0);
+            tooltip.attr('class', 'tooltip hidden');
+        });
+
+    const tooltip = d3.select('body')
+        .append('div')
+        .attr('class', 'tooltip hidden')
+        // .style('opacity', 0);
+}
+
+setLinks();
+setLinkOverlays();
 
 const nodeRadius = 15; // Adjust the radius of the circles
 
-// Add the nodes as SVG circles and text
-const node = svg.selectAll('.node')
-    .data(nodes)
-    .enter()
-    .append('g') // Use a group to hold the circle and text
-    .call(d3.drag()
-        .on('start', dragStarted)
-        .on('drag', dragged)
-        .on('end', dragEnded));
+let node;
+function setNodes() {
 
-const circles = node.append('circle')
-    .attr('class', 'node')
-    .attr('r', nodeRadius);
+    $(".node").remove();
+    $(".mmif-filename").remove();
 
-node.append('text')
-    .attr('class', 'mmif-filename')
-    .attr('dx', 20) // Offset the text horizontally from the circle
-    .style('text-anchor', 'start') // Anchor the text at the start (left side)
-    .attr('dy', '.3em') // Offset the text vertically from the circle
-    .text(d => d.label); // Set the text content
+    // Add the nodes as SVG circles and text
+    node = svg.selectAll('.node')
+        .data(nodes)
+        .enter()
+        .append('g') // Use a group to hold the circle and text
+        .call(d3.drag()
+            .on('start', dragStarted)
+            .on('drag', dragged)
+            .on('end', dragEnded));
 
-// Add click event listener to links
-circles.on('click', (event, d) => {
-    event.stopPropagation();
-    updatePanel(d.id);
-});
+    const circles = node.append('circle')
+        .attr('class', d => `node ${d.temp ? 'temp loading' : ''}`)
+        .attr('r', nodeRadius);
 
+    node.append('text')
+        .attr('class', 'mmif-filename')
+        .attr('dx', 20) // Offset the text horizontally from the circle
+        .style('text-anchor', 'start') // Anchor the text at the start (left side)
+        .attr('dy', '.3em') // Offset the text vertically from the circle
+        .text(d => d.label); // Set the text content
 
-// Create the simulation
-const simulation = d3.forceSimulation()
-    .nodes(nodes)
-    .force("charge", d3.forceManyBody().strength(-1000))
-    .force('center', d3.forceCenter(width / 2, height / 2).strength(1))
-    .force("link", d3.forceLink(links).id(d => d.id).distance(width * 0.15).strength(1))
-    .force("x", d3.forceX().strength(0.1))
-    .force("y", d3.forceY().strength(0.1))
-    .on("tick", tick);
+    // Add click event listener to links
+    circles.on('click', (event, d) => {
+        event.stopPropagation();
+        updatePanel(d.id);
+    });
+
+    return node
+}
+
+setNodes();
+
+let simulation;
+
+function setSimulation() {
+    // stop the simulation if it's already running
+    if (simulation) {
+        simulation.stop();
+    }
+    
+    // Create the simulation
+    simulation = d3.forceSimulation()
+        .nodes(nodes)
+        .force("charge", d3.forceManyBody().strength(-1000))
+        .force('center', d3.forceCenter(width / 2, height / 2).strength(1))
+        .force("link", d3.forceLink(links).id(d => d.id).distance(width * 0.15).strength(1))
+        .force("x", d3.forceX().strength(0.1))
+        .force("y", d3.forceY().strength(0.1))
+        .on("tick", tick);
+
+    // No need to return the simulation since we have a global reference
+}
+
+setSimulation();
 
 // Drag functions
 function dragStarted(event, d) {
@@ -188,4 +238,24 @@ function zoomed({ transform }) {
     else {
         node.selectAll('text').style('display', 'block');
     }
+}
+
+function updateNodes(new_node) {
+    const parsedNode = JSON.parse(new_node);
+    const existingNode = nodes.find(node => node.id === parsedNode.id);
+    if (existingNode) {
+        Object.assign(existingNode, parsedNode);
+    } else {
+        nodes = nodes.concat(parsedNode);
+    }
+
+    setLinks();
+    setLinkOverlays();
+    setNodes();
+    setSimulation();
+}
+
+function addTempFile(filename) {
+    new_node = { 'id': filename, 'label': filename, 'apps': [], 'summary': "Generating summary...", 'entities': [], 'temp': true }
+    updateNodes(JSON.stringify([new_node]));
 }

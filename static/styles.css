@@ -1,4 +1,4 @@
-.node {
+.node:not(.loading) {
     fill: radial-gradient(lightblue, white);
     stroke: #000;
     stroke-width: 0.5px;
@@ -16,7 +16,7 @@
   cursor: default;
 }
 
-.node:hover {
+.node:hover:not(.loading) {
   fill: #FFC0CB;
   cursor: pointer;
 }
@@ -29,7 +29,7 @@
   background: lightsteelblue;
   border: 0px;
   border-radius: 8px;
-  pointer-events: none;
+  /* pointer-events: none; */
 }
 
 .link {
@@ -40,7 +40,7 @@ body, html {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow: hidden;
+  overflow: hidden !important;
 }
 
 #statsPanel {
@@ -58,10 +58,12 @@ body, html {
 }
 
 #graphWrapper {
-  height: 100%; /* Set the height to 100% of the viewport height */
-  width: 100vw; /* Set the width to 100% of the viewport width */
-  background-color:#F8F8F8;
+  height: 100vh;
+  width: 100vw;
+  background-color: #F8F8F8;
   position: absolute;
+  padding: 0;
+  overflow: hidden;
 }
 
 #chartWrapper {
@@ -89,3 +91,64 @@ body, html {
 .panel-content {
   padding: 20px;
 }
+
+.dropzone {
+  border: 2px dashed #ccc;
+  border-radius: 5px;
+  padding: 20px;
+}
+
+.titleContainer {
+  margin: 10px;
+  opacity: 0.75;
+  background-color: transparent;
+  position: absolute;
+}
+
+.dz-message {
+  height: 0px !important;
+  visibility: hidden !important;
+}
+
+.dropzone.dz-drag-hover {
+  border-color: #5cb85c;
+  background-color: #f5f5f5;
+}
+
+.dropzone.dz-drag-hover .dz-message {
+  opacity: 0.5;
+}
+
+.title .subtitle {
+  text-align: left !important;
+  align-self: flex-start;
+}
+
+.circle {
+  z-index: 10;
+}
+
+g {
+  z-index: 10;
+}
+
+.hidden {
+  display: none;
+}
+
+.temp {
+  fill: none;
+}
+
+
+@keyframes rotation {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.loading {
+  stroke: lightgray;
+  stroke-width: 10;
+  clip-path: polygon(0% 0%, 51% 47%, 100% 0%, 100% 100%, 0% 100%);
+  animation: rotation 1s linear infinite;
+}  
