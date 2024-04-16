@@ -14,6 +14,19 @@ summarizer = pipeline("summarization", model="facebook/bart-large-cnn", device=d
 # model = BartForConditionalGeneration.from_pretrained("sshleifer/distilbart-xsum-12-6")
 # tokenizer = BartTokenizer.from_pretrained("sshleifer/distilbart-xsum-12-6")
 
+def url2posix(path):
+    if path.startswith('file:///'):
+        path = path[7:]
+    return path
+
+# TODO: Error handling
+def get_transcript(mmif: Mmif):
+    for document in mmif.documents:
+        if document.at_type.shortname == "TextDocument":
+            with open(url2posix(document.properties.location), "r") as f:
+                return f.read()
+    return None
+
 def get_asr_views(mmif: Mmif):
     asr_views = []
     for view in mmif.views: 
@@ -38,10 +51,12 @@ def generate_abstractive_summary(asr_text: str, max_len=150):
     return summarizer(asr_text, max_length=max_len, min_length=min_len, do_sample=False)[0]['summary_text']
 
 def summarize_file(mmif_file):
-    # with open(mmif_file, 'r') as f:
-    #     mmif = Mmif(f.read())
     mmif = Mmif(mmif_file)
-    asr_views = get_asr_views(mmif)
-    asr_text = get_asr_text(asr_views[0])
+    gold_transcript = get_transcript(mmif)
+    if gold_transcript:
+        asr_text = gold_transcript
+    else:
+        asr_views = get_asr_views(mmif)
+        asr_text = get_asr_text(asr_views[0])
     summary = summarize_from_text(asr_text)
     return summary

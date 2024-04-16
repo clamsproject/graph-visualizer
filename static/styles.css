@@ -29,6 +29,7 @@
   background: lightsteelblue;
   border: 0px;
   border-radius: 8px;
+  z-index: 10 !important;
   /* pointer-events: none; */
 }
 
@@ -43,18 +44,31 @@ body, html {
   overflow: hidden !important;
 }
 
-#statsPanel {
+#filterPanel {
   justify-content: center;
   align-items: center;
   position: absolute;
   top: 20px;
-  bottom: 20px;
   right: 10px;
   z-index: 1;
   width: 30%;
-  background-color: white;
+  /* background-color: white;
   border-radius: 10px;
-  filter: drop-shadow(0 0 0.75rem lightgray);
+  filter: drop-shadow(0 0 0.75rem lightgray); */
+}
+
+.mmifPanel {
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  /* top: 20px; */
+  /* bottom: 20px; */
+  right: 800px;
+  z-index: 10;
+  width: 30%;
+  /* background-color: white;
+  border-radius: 10px;
+  filter: drop-shadow(0 0 0.75rem lightgray); */
 }
 
 #graphWrapper {
@@ -84,8 +98,22 @@ body, html {
   justify-content: space-between;
   align-items: center;
 }
+
 .fa-square-caret-down.rotated {
   transform: rotate(180deg);
+}
+
+.card-header {
+  cursor: pointer;
+}
+
+.card {
+  position: absolute;
+  z-index: 50;
+}
+
+.card-footer-item {
+  cursor: pointer !important;
 }
 
 .panel-content {
@@ -125,11 +153,12 @@ body, html {
 }
 
 .circle {
-  z-index: 10;
+  z-index: 5;
 }
 
 g {
-  z-index: 10;
+  position: absolute;
+  z-index: 5;
 }
 
 .hidden {

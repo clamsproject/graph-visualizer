@@ -48,9 +48,11 @@ var pieChart = new Chart(ctx, {
                 dataset.backgroundColor[i] = dataset.unselectedBackgroundColors[i];
             }
           }
-        //   const dataset = event.chart.data.datasets[0];
-        //   dataset.backgroundColor[clickedIndex] = dataset.hoverBackgroundColor[clickedIndex];
+          // const dataset = event.chart.data.datasets[0];
+          // dataset.backgroundColor[clickedIndex] = dataset.hoverBackgroundColor[clickedIndex];
           event.chart.update();
+
+          filterByApp();
       
           tick(); // Call the tick function to update node colors/opacity
         }
@@ -75,3 +77,23 @@ var pieChart = new Chart(ctx, {
       },
     }]
   });
+
+
+  $(".card-header").click(function(){
+    var panel = $(this).parent();
+    var panelContent = panel.find(".card-content");
+    var panelId = panel.data("panel-id");
+    var panelState = panel.data("panel-state");
+    
+    panelContent.slideToggle("slow");
+    $(this).toggleClass("active");
+    $(this).find(".fa-regular").toggleClass("rotated")
+    
+    if (panelState === "closed") {
+        panel.data("panel-state", "open");
+        // code to handle opening the panel
+    } else {
+        panel.data("panel-state", "closed");
+        // code to handle closing the panel
+    }
+});
