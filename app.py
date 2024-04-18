@@ -4,6 +4,7 @@ import json
 from flask import request
 from modeling.summarize import summarize_file
 from modeling.ner import get_entities
+from modeling.cluster import cluster_nodes
 from db import insert_data, get_all_data, delete_data
 import ast
 
@@ -25,7 +26,7 @@ def get_all_nodes():
     # TODO: HORRIBLE for security, make sure to fix
     nodes = [(id, label, ast.literal_eval(apps), summary, ast.literal_eval(entities), temp, hidden) for id, label, apps, summary, entities, temp, hidden in nodes]
     nodes = [dict(zip(["id", "label", "apps", "summary", "entities", "temp", "hidden"], node)) for node in nodes]
-    return nodes
+    return nodes 
 
 @app.route('/delete', methods=['POST'])
 def delete():
@@ -51,9 +52,19 @@ def upload():
                      'temp': False, 
                      'hidden': False }        
         insert_data("nodes", new_node)
+        # Un-stringify apps list to pass back to the app
+        new_node['apps'] = ast.literal_eval(new_node['apps'])
+        new_node['entities'] = ast.literal_eval(new_node['entities'])
         return json.dumps(new_node)
     except Exception as e:
         return json.dumps({"error": e})
+    
+@app.route('/cluster', methods=['GET'])
+def cluster():
+    nodes = get_all_nodes()
+    clusters = cluster_nodes(nodes, 4)
+    return json.dumps(clusters)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

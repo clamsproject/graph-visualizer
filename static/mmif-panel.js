@@ -26,10 +26,6 @@ $(".panel-header").click(function(){
     }
 });
 
-// $(".panel-header").html(function() {
-//     if (clickedNode == null) return "No MMIF file selected!"
-//     else return clickedNode
-// })
 
 function updatePanel(id) {
     const mmifContent = getMMIFFromID(id)

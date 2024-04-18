@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Graph Visualizer</title>
     <script src="https://d3js.org/d3.v6.min.js"></script>
@@ -8,22 +9,19 @@
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+    <script
+        src="https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/bulma-quickview/dist/js/bulma-quickview.min.js"></script>
+
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link  
-        rel="stylesheet"
-        href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css"
-        type="text/css"
-    />
-    <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
-    <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css"
-    >
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/dist/css/bulma-extensions.min.css">
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
+
 <body>
     <div id="graphWrapper" class="dropzone">
         <div class="titleContainer">
@@ -31,7 +29,7 @@
             <p class="subtitle">Drag a MMIF file anywhere to upload</p>
         </div>
 
-        <!-- Pie chart (placeholder for Kibana) -->
+        <!-- Filter Panel -->
         <div class="card" id="filterPanel">
             <header class="card-header">
                 <p class="card-header-title">Filter Nodes</p>
@@ -45,33 +43,69 @@
                 <div id="chartWrapper">
                     <canvas id="pieChart"></canvas>
                 </div>
+
+                <div id="checkBoxWrapper">
+                    <label class="checkbox">
+                        <input type="checkbox" />
+                        Show filenames
+                    </label>
+                </div>
+                <div id="sliderWrapper">
+                    <h4 class="title is-5" id="sliderText"></h4>
+                    <input id="sliderWithValue" class="slider has-output" min="1" max="3" value="1" step="1"
+                        type="range">
+                    <output for="sliderWithValue"></output>
+                </div>
+                <button class="button is-primary" id="filterButton" onclick="cluster()">Cluster</button>
             </div>
         </div>
-        <!-- Placeholder for mmif view panel
-        <div class="card" id="mmifPanel" style="margin: 10px; margin-top: 25px;">
-            <header class="card-header">
-                <p class="card-header-title">No file selected</p>
-                <button class="card-header-icon" aria-label="more options">
-                    <span class="icon">
-                    <i class="fas fa-angle-down" aria-hidden="true"></i>
-                    </span>
-                </button>
-                </header>
-                <div class="card-content is-hidden">
-                <div class="content">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec
-                    iaculis mauris.
-                    <a href="#">@bulmaio</a>. <a href="#">#css</a> <a href="#">#responsive</a>
-                    <br />
-                    <time datetime="2016-1-1">11:09 PM - 1 Jan 2016</time>
-                </div>
-                </div>
-                <footer class="card-footer is-hidden">
-                <a href="#" class="card-footer-item">Visualize</a>
-                <a href="#" class="card-footer-item" style="color: #ff6384">Delete</a>
-                </footer>              
-        </div>         -->
     </div>
+
+    <script>
+        function cluster() {
+            fetch("/cluster")
+                .then(response => response.json())
+                .then(data => {
+                    nodes = data;
+                    numNodes = 4;
+                    updateGraph();
+                })
+        }
+    </script>
+
+
+    <!-- Slider script -->
+    <script>
+        const entitySlider = document.getElementById('sliderWithValue');
+        const output = document.querySelector('output[for="sliderWithValue"]');
+
+        output.textContent = entitySlider.value; // Set initial value
+
+        entitySlider.addEventListener('input', () => {
+            output.textContent = entitySlider.value;
+            const entityNumber = entitySlider.value == 1 ? "entity" : "entities";
+            valueSpan = `<span style="color: #FF4A1C !important;">${entitySlider.value}</span>`
+            $("#sliderText").html(`Draw links for every ${valueSpan} shared ${entityNumber}`);
+            updateGraph();
+        });
+
+        const entityNumber = entitySlider.value == 1 ? "entity" : "entities";
+        valueSpan = `<span style="color: #FF4A1C !important;">${entitySlider.value}</span>`
+        $("#sliderText").html(`Draw links for every ${valueSpan} shared ${entityNumber}`);
+        bulmaSlider.attach();
+    </script>
+
+    <!-- Checkbox script -->
+    <script>
+        const filenameCheckbox = document.querySelector('input[type="checkbox"]');
+        filenameCheckbox.addEventListener('change', () => {
+            $(".mmif-filename").css("display", function () {
+                return filenameCheckbox.checked ? "block" : "none";
+            });
+        });
+    </script>
+
+
 
     <!-- Node View -->
     <script type="text/html" id="mmif-node-template">
@@ -79,13 +113,13 @@
     </script>
 
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             $('#mmifPanel').data('panel-state', 'closed');
             var panelContent = $('#mmifPanel').find(".panel-content");
             panelContent.slideToggle("fast");
 
-            $("#statsPanel").resizable({handles: "w", minWidth: 300});
-            $(".dz-hidden-input").prop("disabled",true);
+            $("#statsPanel").resizable({ handles: "w", minWidth: 300 });
+            $(".dz-hidden-input").prop("disabled", true);
         });
     </script>
 
@@ -94,18 +128,18 @@
 
         const dropzone = new Dropzone(".dropzone", {
             url: "/upload",
-            addedfile: function(file) {
+            addedfile: function (file) {
                 addTempFile(file.name);
             },
-            removedfile: function(file) {
+            removedfile: function (file) {
                 document.body.classList.remove('dz-drag-hover');
             },
-            success: function(file, response) {
+            success: function (file, response) {
                 addNode(response);
                 // Reset the Dropzone instance after a successful upload
                 dropzoneInstance.removeAllFiles();
             },
-            init: function() {
+            init: function () {
                 // Store the Dropzone instance in the variable
                 dropzoneInstance = this;
             }
@@ -121,4 +155,5 @@
     <script src="{{ url_for('static', filename='mmif-panel.js') }}"></script>
 
 </body>
+
 </html>

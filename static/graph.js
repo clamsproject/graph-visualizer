@@ -1,19 +1,9 @@
 let clickedNode = null;
-
-// Define the data for nodes and links
-// var nodes = [
-//     { id: 'node1', label: 'ocr1', apps: ['doctr-wrapper'], summary: "This broadcast segment explores the congressional oversight and regulation of major pizza delivery companies, including Pizza Hut, Papa John's, and Domino's, and their business practices.", entities: ['Pizza Hut', "Papa John's", "Domino's", 'Congress'], 'temp': false, 'hidden': false},
-//     { id: 'node2', label: 'swt1', apps: ['swt-detection', 'doctr-wrapper'], summary: "This news report analyzes the operations and market strategies of Pizza Hut, Papa John's, and Domino's within the United States, with a focus on their delivery services and presence across the country.", entities: ['Pizza Hut', "Papa John's", "Domino's", 'United States'], 'temp': false, 'hidden': false},
-//     { id: 'node3', label: 'ner', apps: ['spacy-wrapper'], summary: "This broadcast segment utilizes named entity recognition techniques to explore various entities and organizations involved in the United States.", entities: ['United States'], 'temp': false, 'hidden': false},
-//     { id: 'node4', label: 'ex', apps: [], summary: "No summary available.", entities: [], 'temp': false, 'hidden': false},
-//     { id: 'node5', label: 'swt-rfb', apps: ['swt-detection', 'doctr-wrapper', 'role-filler-binder'], summary: "This news report examines the role of Congress in regulating and overseeing the pizza delivery industry in the United States.", entities: ['Congress'], 'temp': false, 'hidden': false},
-// ];
 let nodes = [];
 
 fetch('/all-nodes')
     .then(response => response.json())
     .then(data => {
-        console.log(data);
         nodes = data;
         updateGraph();
     });
@@ -47,7 +37,7 @@ function setLinks() {
     for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
             const sharedEntities = nodes[i].entities.filter(entity => nodes[j].entities.includes(entity));
-            if (sharedEntities.length > 0 && nodes[i].hidden == false && nodes[j].hidden == false) {
+            if (sharedEntities.length >= entitySlider.value && nodes[i].hidden == false && nodes[j].hidden == false) {
                 links.push({ source: nodes[i].id, target: nodes[j].id, weight: sharedEntities.length, sharedEntities: sharedEntities });
             }
         }
@@ -121,24 +111,35 @@ function setNodes() {
             .on('drag', dragged)
             .on('end', dragEnded));    
 
+    clusterColors = ['red', 'green', 'blue', 'orange']
+
     const circles = node.append('circle')
         .attr('class', d => `node ${d.temp ? 'temp loading' : ''}`)
-        .attr('r', nodeRadius);
+        .attr('r', nodeRadius)
+        .attr('fill', d => 'cluster' in d ? clusterColors[d.cluster] : 'black');
 
     node.append('text')
         .attr('class', 'mmif-filename')
         .attr('dx', 20) // Offset the text horizontally from the circle
         .style('text-anchor', 'start') // Anchor the text at the start (left side)
         .attr('dy', '.3em') // Offset the text vertically from the circle
-        .text(d => d.label); // Set the text content
+        .text(d => d.label) // Set the text content  
+        .style('display', filenameCheckbox.checked ? "block" : "none");  
 
     // Add click event listener to circles
     circles.on('click', (event, d) => {
+        const selectedCircle = d3.select(event.target);
         if (clickedNode === d) {
             // If the same node is clicked again, toggle the tooltip
-            node.filter(data => data.id === d.id).select('.tooltip').remove();
+            selectedCircle.classed('clicked', false);
+            nodeGroup = node.filter(data => data.id === d.id);
+            nodeGroup.select('.tooltip').remove();
+            nodeGroup.lower();
+            link.lower();
+            linkOverlay.lower();
             clickedNode = null; // Reset the clicked node
         } else {
+            selectedCircle.classed('clicked', true);
             clickedNode = d; // Store the clicked node
             createTooltip(node, d, event); // Pass the node selection, data, and event
         }
@@ -149,42 +150,48 @@ function setNodes() {
 
 
 function createTooltip(nodeSelection, d, event) {
+    const tooltipWidth = 300;
+
     // Remove existing tooltip for the clicked node
     nodeSelection.filter(data => data.id === d.id).select('.tooltip').remove();
 
+    const nodeGroup = nodeSelection.filter(data => data.id === d.id)
+
     // Create a new group for the tooltip
-    const tooltipGroup = nodeSelection.filter(data => data.id === d.id)
+    const tooltipGroup = nodeGroup
         .append('g')
         .attr('class', 'tooltip');
-        // .style('pointer-events', 'none'); // Prevent tooltip from capturing mouse events
 
     // Create a foreignObject to hold the HTML content
     const foreignObject = tooltipGroup.append('foreignObject')
         .attr('x', 20) // Offset from the node circle
         .attr('y', -20) // Offset from the node circle
-        .attr('width', 200)
-        .attr('height', 2000)
+        .attr('width', tooltipWidth)
+        .attr('height', 350)
         .style('z-index', '1000');
 
     // Append an HTML div within the foreignObject
     const div = foreignObject.append('xhtml:div')
         .attr('class', 'card')
-        .style('width', '200px');
+        .style('width', `${tooltipWidth}px`);
         // .style('height', '500px');
 
-
-    // TODO: Keep tooltip from appearing behind nodes
-    // Add content to the div
+    entityTags = "";
+    d.entities.forEach(entity => entityTags = entityTags.concat(`<span class="entitytag tag is-primary">${entity}</span>`));
     div.html(`
         <header class="card-header"><p class="card-header-title">${d.label}</p></header>
         <div class="card-content">
             <p>${d.summary}</p>
+            ${entityTags}
         </div>
         <footer class="card-footer">
             <a href="#" class="card-footer-item">Visualize</a>
             <a href="#" class="card-footer-item" style="color: #ff6384" onclick="deleteNode('${d.id}')">Delete</a>
         </footer>              
     `);
+
+    // Bring tooltip to the foreground
+    nodeGroup.raise();
 }
 
 function deleteNode(nodeId) {
@@ -307,11 +314,11 @@ function zoomed({ transform }) {
     svg.attr('transform', transform);
     //   Text should disappear if zoomed out far enough
     if (transform.k < 0.75) {
-        node.selectAll('text').style('display', 'none');
+        if (filenameCheckbox.checked) node.selectAll('text').style('display', 'none');
         node.selectAll('.tooltip').style('display', 'none');
     }
     else {
-        node.selectAll('text').style('display', 'block');
+        if (filenameCheckbox.checked) node.selectAll('text').style('display', 'block');
         node.selectAll('.tooltip').style('display', 'block');
     }
 }
@@ -336,7 +343,12 @@ function addNode(new_node) {
 }
 
 function addTempFile(filename) {
-    new_node = { 'id': filename, 'label': filename, 'apps': [], 'summary': "Generating summary...", 'entities': [], 'temp': true }
+    filename = filename.replace(".mmif", "").replace(".json", "");
+    new_node = { 'id': filename, 
+                 'label': filename, 'apps': [], 
+                 'summary': "Generating summary...", 
+                 'entities': [], 
+                 'temp': true }
     addNode(JSON.stringify([new_node]));
 }
 
