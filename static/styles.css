@@ -21,6 +21,11 @@
   cursor: pointer;
 }
 
+.clicked {
+  /* PLACEHOLDER FOR GLOW */
+  fill: black;
+}
+
 .tooltip {
   position: absolute;
   text-align: center;
@@ -181,3 +186,28 @@ g {
   clip-path: polygon(0% 0%, 51% 47%, 100% 0%, 100% 100%, 0% 100%);
   animation: rotation 1s linear infinite;
 }  
+
+#sliderWrapper {
+  margin: 10px;
+  margin-left: 50px;
+  margin-right: 50px;
+}
+
+.entitytag {
+  margin: 5px;
+}
+
+#checkBoxWrapper {
+  margin: 10px;
+  margin-left: 50px;
+  margin-right: 50px;
+  margin-bottom: 20px;
+}
+
+#filterButton {
+  margin: 10px;
+  margin-left: 50px;
+  margin-right: 50px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
