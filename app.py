@@ -7,6 +7,7 @@ from modeling.ner import get_entities
 from modeling.cluster import cluster_nodes
 from db import insert_data, get_all_data, delete_data
 import ast
+from mmif import Mmif
 
 # TODO: dynamically change node size based on filesize
 # TODO: maybe automatically change document base? or at least make it easy to change
@@ -24,7 +25,7 @@ def index():
 def get_all_nodes():
     nodes = get_all_data("nodes")
     # TODO: HORRIBLE for security, make sure to fix
-    nodes = [(id, label, ast.literal_eval(apps), summary, ast.literal_eval(entities), temp, hidden) for id, label, apps, summary, entities, temp, hidden in nodes]
+    nodes = [(id, label, apps.split(","), summary, ast.literal_eval(entities), temp, hidden) for id, label, apps, summary, entities, temp, hidden in nodes]
     nodes = [dict(zip(["id", "label", "apps", "summary", "entities", "temp", "hidden"], node)) for node in nodes]
     return nodes 
 
@@ -42,18 +43,20 @@ def upload():
     try:
         file = request.files['file']
         filename = file.filename.replace(".mmif", "").replace(".json", "")
-        summary = summarize_file(file.read())
+        mmif = Mmif(file.read())
+        summary = summarize_file(mmif)
         entities = get_entities(summary)
+        apps = [str(view.metadata.app) for view in mmif.views]
         new_node = { 'id': filename, 
                      'label': filename, 
-                     'apps': "['doctr-wrapper']", 
+                     'apps': ",".join(apps), 
                      'summary': summary, 
                      'entities': str(entities), 
                      'temp': False, 
                      'hidden': False }        
         insert_data("nodes", new_node)
         # Un-stringify apps list to pass back to the app
-        new_node['apps'] = ast.literal_eval(new_node['apps'])
+        new_node['apps'] = new_node['apps'].split(",")
         new_node['entities'] = ast.literal_eval(new_node['entities'])
         return json.dumps(new_node)
     except Exception as e:

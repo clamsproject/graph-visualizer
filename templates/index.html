@@ -43,7 +43,7 @@
                 <div id="chartWrapper">
                     <canvas id="pieChart"></canvas>
                 </div>
-
+                <input class="input" id="searchfield" type="text" placeholder="Search nodes" />
                 <div id="checkBoxWrapper">
                     <label class="checkbox">
                         <input type="checkbox" />
@@ -60,6 +60,22 @@
             </div>
         </div>
     </div>
+
+    <script>
+        const searchField = document.getElementById('searchfield');
+        searchField.addEventListener('keydown', function(event) {
+            if (event.key === "Enter") {
+                search(searchField.value);
+                updateGraph();
+            }
+        });
+
+        function search(value) {
+            nodes.forEach(node => {
+                node.hidden = !(node.summary.includes(value)||node.label.includes(value));
+            });
+        }
+    </script>
 
     <script>
         function cluster() {
@@ -150,8 +166,8 @@
 
 
     <!-- Custom assets -->
-    <script src="{{ url_for('static', filename='filter-panel.js') }}"></script>
     <script src="{{ url_for('static', filename='graph.js') }}"></script>
+    <script src="{{ url_for('static', filename='filter-panel.js') }}"></script>
     <script src="{{ url_for('static', filename='mmif-panel.js') }}"></script>
 
 </body>
