@@ -50,8 +50,7 @@ def generate_abstractive_summary(asr_text: str, max_len=150):
     min_len = 30 if max_len > 30 else int(max_len/2)
     return summarizer(asr_text, max_length=max_len, min_length=min_len, do_sample=False)[0]['summary_text']
 
-def summarize_file(mmif_file):
-    mmif = Mmif(mmif_file)
+def summarize_file(mmif: Mmif):
     gold_transcript = get_transcript(mmif)
     if gold_transcript:
         asr_text = gold_transcript

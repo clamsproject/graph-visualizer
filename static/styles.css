@@ -23,7 +23,7 @@
 
 .clicked {
   /* PLACEHOLDER FOR GLOW */
-  fill: black;
+  fill: #FFC0CB;
 }
 
 .tooltip {
@@ -36,6 +36,10 @@
   border-radius: 8px;
   z-index: 10 !important;
   /* pointer-events: none; */
+}
+
+.tooltip-header {
+  cursor: grab !important;
 }
 
 .link {
@@ -210,4 +214,16 @@ g {
   margin-right: 50px;
   margin-bottom: 20px;
   cursor: pointer;
+}
+
+#searchfield {
+  margin-top: 20px;
+  /* margin-left: 50px;
+  margin-right: 50px; */
+  margin-bottom: 20px;
+  cursor: text;
+}
+
+.tooltip-close {
+  cursor: pointer !important;
 }

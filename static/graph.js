@@ -1,13 +1,21 @@
 let clickedNode = null;
 let nodes = [];
 
-fetch('/all-nodes')
-    .then(response => response.json())
-    .then(data => {
+// Fetching nodes is wrapped in a promise so other scripts can wait
+// for nodes to be populated (filter-panel especially)
+const nodesPromise = new Promise((resolve, reject) => {
+    fetch('/all-nodes')
+      .then(response => response.json())
+      .then(data => {
         nodes = data;
         updateGraph();
-    });
-
+        resolve(); // Resolve the Promise when nodes are fetched
+      })
+      .catch(error => {
+        reject(error); // Reject the Promise if there's an error
+      });
+  });
+  
 // Set up the dimensions and margins of the graph
 const page_width = window.innerWidth;
 const page_height = window.innerHeight;
@@ -151,23 +159,28 @@ function setNodes() {
 
 function createTooltip(nodeSelection, d, event) {
     const tooltipWidth = 300;
+    const tooltipHeight = 350;
 
     // Remove existing tooltip for the clicked node
     nodeSelection.filter(data => data.id === d.id).select('.tooltip').remove();
 
-    const nodeGroup = nodeSelection.filter(data => data.id === d.id)
+    const nodeGroup = nodeSelection.filter(data => data.id === d.id);
 
     // Create a new group for the tooltip
     const tooltipGroup = nodeGroup
         .append('g')
-        .attr('class', 'tooltip');
+        .attr('class', 'tooltip')
+        .call(d3.drag() // Add the drag behavior to the tooltip group
+            .on('start', dragStartedTooltip)
+            .on('drag', draggedTooltip)
+            .on('end', dragEndedTooltip));
 
     // Create a foreignObject to hold the HTML content
     const foreignObject = tooltipGroup.append('foreignObject')
         .attr('x', 20) // Offset from the node circle
         .attr('y', -20) // Offset from the node circle
         .attr('width', tooltipWidth)
-        .attr('height', 350)
+        .attr('height', tooltipHeight)
         .style('z-index', '1000');
 
     // Append an HTML div within the foreignObject
@@ -179,7 +192,14 @@ function createTooltip(nodeSelection, d, event) {
     entityTags = "";
     d.entities.forEach(entity => entityTags = entityTags.concat(`<span class="entitytag tag is-primary">${entity}</span>`));
     div.html(`
-        <header class="card-header"><p class="card-header-title">${d.label}</p></header>
+        <header class="card-header tooltip-header">
+            <p class="card-header-title">${d.label}</p>
+            <button class="card-header-icon" aria-label="more options">
+                <span class="icon">
+                    <i class="fa-solid fa-close tooltip-close"></i>
+                </span>
+            </button>
+        </header>
         <div class="card-content">
             <p>${d.summary}</p>
             ${entityTags}
@@ -190,8 +210,41 @@ function createTooltip(nodeSelection, d, event) {
         </footer>              
     `);
 
+    $(".tooltip-close").click(function(event) { 
+        // TODO: very hacky
+        parentG = d3.select(event.target).node().parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode;
+        selectedCircle = parentG.childNodes[0];
+        selectedCircle.classList.remove('clicked');
+        nodeGroup.select('.tooltip').remove();
+        nodeGroup.lower();
+        link.lower();
+        linkOverlay.lower();
+        clickedNode = null; // Reset the clicked node
+    })
+
     // Bring tooltip to the foreground
     nodeGroup.raise();
+
+    let lastPositionX = 0;
+    let lastPositionY = 0;
+    let initialDragX, initialDragY;
+    // Tooltip drag functions
+    function dragStartedTooltip(event, d) {
+        initialDragX = event.x - lastPositionX;
+        initialDragY = event.y - lastPositionY;
+    }
+
+    function draggedTooltip(event, d) {
+        const dx = event.x - initialDragX;
+        const dy = event.y - initialDragY;
+        tooltipGroup.attr('transform', `translate(${dx}, ${dy})`);
+        lastPositionX = dx;
+        lastPositionY = dy;
+    }
+
+    function dragEndedTooltip(event, d) {
+        // Translate the tooltip to the final mouse position
+    }
 }
 
 function deleteNode(nodeId) {
