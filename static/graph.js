@@ -406,7 +406,7 @@ function addTempFile(filename) {
 }
 
 function filterByApp() {
-    chosenCLAMSApps = clickedCLAMSApps.map(id => labels[id]);
+    chosenCLAMSApps = clickedCLAMSApps.map(id => Object.keys(getAppLabels())[id]);
     for (mmifNode of nodes) {
         if (chosenCLAMSApps.length == 0) {
             mmifNode.hidden = false;
