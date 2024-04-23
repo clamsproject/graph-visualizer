@@ -231,7 +231,6 @@ function createTooltip(nodeSelection, d, event) {
     let lastPositionX = 0;
     let lastPositionY = 0;
     let initialDragX, initialDragY;
-
     // Tooltip drag functions
     function dragStartedTooltip(event, d) {
         initialDragX = event.x - lastPositionX;
