@@ -1,5 +1,6 @@
 let clickedNode = null;
 let nodes = [];
+let frozen = false;
 
 // Fetching nodes is wrapped in a promise so other scripts can wait
 // for nodes to be populated (filter-panel especially)
@@ -22,13 +23,15 @@ const page_height = window.innerHeight;
 const width = page_width;
 const height = page_height;
 
+let zoomBehavior = d3.zoom().on('zoom', zoomed);
+
 // Create the SVG container
 const svg = d3.select('#graphWrapper')
-    .append('svg')
-    .attr('width', width)
-    .attr('height', height)
-    .call(d3.zoom().on('zoom', zoomed))
-    .append('g');
+  .append('svg')
+  .attr('width', width)
+  .attr('height', height)
+  .call(zoomBehavior)
+  .append('g');
 
 const colorScale = d3.scaleLinear()
     .domain([1, 3])
@@ -228,10 +231,12 @@ function createTooltip(nodeSelection, d, event) {
     let lastPositionX = 0;
     let lastPositionY = 0;
     let initialDragX, initialDragY;
+
     // Tooltip drag functions
     function dragStartedTooltip(event, d) {
         initialDragX = event.x - lastPositionX;
         initialDragY = event.y - lastPositionY;
+        nodeGroup.raise();
     }
 
     function draggedTooltip(event, d) {
@@ -309,6 +314,7 @@ function dragStarted(event, d) {
 function dragged(event, d) {
     // Resume sim alpha target if dragged. This needs to be here rather than
     // in dragStarted so the simulation doesn't resume when clicking a node.
+    if (frozen) return;
     if (hasBeenDragged == false) {
         simulation.alphaTarget(0.3).restart();
         hasBeenDragged = true;
@@ -318,6 +324,7 @@ function dragged(event, d) {
 }
 
 function dragEnded(event, d) {
+    if (frozen) return;
     if (!event.active) simulation.alphaTarget(0);
     // if (!hasBeenDragged) simulation.force(0);
     hasBeenDragged = false;
@@ -377,6 +384,10 @@ function zoomed({ transform }) {
 }
 
 function updateGraph() {
+    svg.selectAll("line").remove();
+    svg.selectAll("rect").remove();
+    svg.selectAll("foreignObject").remove();
+    frozen = false;
     setLinks();
     setLinkOverlays();
     setNodes();

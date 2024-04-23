@@ -1,13 +1,15 @@
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template, request
 import os
 import json
-from flask import request
+import ast
+from mmif import Mmif
+
 from modeling.summarize import summarize_file
 from modeling.ner import get_entities
 from modeling.cluster import cluster_nodes
+from modeling.topic_model import get_topics
+
 from db import insert_data, get_all_data, delete_data
-import ast
-from mmif import Mmif
 
 # TODO: dynamically change node size based on filesize
 # TODO: maybe automatically change document base? or at least make it easy to change
@@ -25,8 +27,8 @@ def index():
 def get_all_nodes():
     nodes = get_all_data("nodes")
     # TODO: HORRIBLE for security, make sure to fix
-    nodes = [(id, label, apps.split(","), summary, ast.literal_eval(entities), temp, hidden) for id, label, apps, summary, entities, temp, hidden in nodes]
-    nodes = [dict(zip(["id", "label", "apps", "summary", "entities", "temp", "hidden"], node)) for node in nodes]
+    nodes = [(id, label, apps.split(","), summary, transcript, ast.literal_eval(entities), temp, hidden) for id, label, apps, summary, transcript, entities, temp, hidden in nodes]
+    nodes = [dict(zip(["id", "label", "apps", "summary", "transcript", "entities", "temp", "hidden"], node)) for node in nodes]
     return nodes 
 
 @app.route('/delete', methods=['POST'])
@@ -44,13 +46,14 @@ def upload():
         file = request.files['file']
         filename = file.filename.replace(".mmif", "").replace(".json", "")
         mmif = Mmif(file.read())
-        summary = summarize_file(mmif)
+        summary, transcript = summarize_file(mmif)
         entities = get_entities(summary)
         apps = [str(view.metadata.app) for view in mmif.views]
         new_node = { 'id': filename, 
                      'label': filename, 
                      'apps': ",".join(apps), 
                      'summary': summary, 
+                     "transcript": transcript,
                      'entities': str(entities), 
                      'temp': False, 
                      'hidden': False }        
@@ -68,6 +71,15 @@ def cluster():
     clusters = cluster_nodes(nodes, 4)
     return json.dumps(clusters)
 
+@app.route('/topic_model', methods=['GET'])
+def topic_model():
+    nodes = get_all_nodes()
+    docs = [node['transcript'] for node in nodes]
+    topic_names, topic_distr = get_topics(docs)
+    res = {}
+    res["names"] = topic_names
+    res["probs"] = {nodes[i]["id"]: topic_distr[i] for i in range(len(nodes))}
+    return json.dumps(res)
 
 if __name__ == '__main__':
     app.run(debug=True)

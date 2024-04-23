@@ -58,4 +58,4 @@ def summarize_file(mmif: Mmif):
         asr_views = get_asr_views(mmif)
         asr_text = get_asr_text(asr_views[0])
     summary = summarize_from_text(asr_text)
-    return summary
+    return summary, asr_text

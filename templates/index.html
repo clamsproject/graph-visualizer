@@ -31,11 +31,11 @@
 
         <!-- Filter Panel -->
         <div class="card" id="filterPanel">
-            <header class="card-header">
+            <header class="card-header" id="filterHeader">
                 <p class="card-header-title">Filter Nodes</p>
                 <button class="card-header-icon" aria-label="more options">
                     <span class="icon">
-                        <i class="fas fa-angle-down" aria-hidden="true"></i>
+                        <i class="fa-solid fa-chevron-up" aria-hidden="true"></i>
                     </span>
                 </button>
             </header>
@@ -56,9 +56,13 @@
                         type="range">
                     <output for="sliderWithValue"></output>
                 </div>
-                <button class="button is-primary" id="filterButton" onclick="cluster()">Cluster</button>
+                <div id="clusterButtonsWrapper">
+                    <button class="button is-primary clusterButton" onclick="cluster()">Cluster</button>
+                    <button class="button is-info clusterButton" onclick="topicModel()">Topic Model</button>
+                </div>
             </div>
         </div>
+        <button class="button is-dark inactive" id="returnButton" onclick="enableFilterCard()">Return to graph view</button>
     </div>
 
     <script>
@@ -85,6 +89,19 @@
                     nodes = data;
                     numNodes = 4;
                     updateGraph();
+                })
+        }
+
+        function topicModel() {
+            fetch("/topic_model")
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    showTopicModel(data);
+                    // getScreenSpace()
+                    // nodes = data;
+                    // numNodes = 4;
+                    // updateGraph();
                 })
         }
     </script>
@@ -152,6 +169,7 @@
             },
             success: function (file, response) {
                 addNode(response);
+                updateGraph();
                 // Reset the Dropzone instance after a successful upload
                 dropzoneInstance.removeAllFiles();
             },
@@ -169,6 +187,7 @@
     <script src="{{ url_for('static', filename='graph.js') }}"></script>
     <script src="{{ url_for('static', filename='filter-panel.js') }}"></script>
     <script src="{{ url_for('static', filename='mmif-panel.js') }}"></script>
+    <script src="{{ url_for('static', filename='topic-model.js') }}"></script>
 
 </body>
 
