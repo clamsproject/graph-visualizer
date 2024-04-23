@@ -162,3 +162,5 @@ cython_debug/
 *.sh
 
 nodedatabase.db
+data/*
+upload_all.py
