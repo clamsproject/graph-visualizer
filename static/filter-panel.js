@@ -76,14 +76,9 @@ function updatePieChart() {
                   dataset.backgroundColor[i] = dataset.unselectedBackgroundColors[i];
               }
             }
-            // const dataset = event.chart.data.datasets[0];
-            // dataset.backgroundColor[clickedIndex] = dataset.hoverBackgroundColor[clickedIndex];
             event.chart.update();
-  
-            filterByApp();
-        
-            tick(); // Call the tick function to update node colors/opacity
-          }
+            searchFilter({field: "apps", value: clickedCLAMSApps.map(id => Object.keys(getAppLabels())[id])}, section="piechart");
+            }
         }    
       },
   
@@ -111,10 +106,10 @@ function updatePieChart() {
 
   let enabled = true;
 
-  $(".card-header").click(function(){
+  $("#filterHeader").click(function(){
     if (!enabled) return;
     var panel = $(this).parent();
-    var panelContent = panel.find(".card-content");
+    var panelContent = panel.find(".panel-content");
     var panelId = panel.data("panel-id");
     var panelState = panel.data("panel-state");
     
@@ -131,18 +126,18 @@ function updatePieChart() {
     }
 });
 
-function disableFilterCard() {
-  enabled = false;
-  $(".card-header").addClass("has-background-grey-lighter");
-  $(".card-header").addClass("has-text-grey");
-  $("#returnButton").removeClass("inactive");
-}
+// function disableFilterCard() {
+//   enabled = false;
+//   $(".card-header").addClass("has-background-grey-lighter");
+//   $(".card-header").addClass("has-text-grey");
+//   $("#returnButton").removeClass("inactive");
+// }
 
-function enableFilterCard() {
-  enabled = true;
-  $(".card-header").removeClass("has-background-grey-lighter");
-  $(".card-header").removeClass("has-text-grey");
-  $("#returnButton").addClass("inactive");
-  $(".card-header").click();
-  updateGraph();
-}
+// function enableFilterCard() {
+//   enabled = true;
+//   $(".card-header").removeClass("has-background-grey-lighter");
+//   $(".card-header").removeClass("has-text-grey");
+//   $("#returnButton").addClass("inactive");
+//   $(".card-header").click();
+//   updateGraph();
+// }

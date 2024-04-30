@@ -1,13 +1,14 @@
 from flask import Flask, render_template, request
+from flask_cors import CORS, cross_origin
 import os
 import json
 import ast
 from mmif import Mmif
 
-from modeling.summarize import summarize_file
+from modeling.summarize import summarize_file, summarize_from_text
 from modeling.ner import get_entities
 from modeling.cluster import cluster_nodes
-from modeling.topic_model import get_topics
+from modeling.topic_model import get_topics, train_topic_model
 
 from db import insert_data, get_all_data, delete_data
 
@@ -15,6 +16,7 @@ from db import insert_data, get_all_data, delete_data
 # TODO: maybe automatically change document base? or at least make it easy to change
 
 app = Flask(__name__, static_url_path='/static')
+CORS(app, support_credentials=True)
 
 # Get the absolute path to the static folder
 static_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
@@ -80,6 +82,23 @@ def topic_model():
     res["names"] = topic_names
     res["probs"] = {nodes[i]["id"]: topic_distr[i] for i in range(len(nodes))}
     return json.dumps(res)
+
+@app.route('/add_topics', methods=['POST'])
+def addTopics():
+    try:
+        topics = request.json['topics']
+        train_topic_model(topics)
+        return topic_model()
+    except Exception as e:
+        return json.dumps({"error": e})
+
+@app.route('/summarize_all', methods=['GET'])
+def summarize_all():
+    nodes = get_all_nodes()
+    summaries = [node["summary"] for node in nodes]
+    summaries = "<NEXT ARTICLE>".join(summaries)
+    return summarize_from_text(summaries)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

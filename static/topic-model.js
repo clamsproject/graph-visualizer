@@ -13,9 +13,12 @@
   
 
 function showTopicModel(data) {
-    $("#filterHeader").click();
-    disableFilterCard();
+    // $("#filterHeader").click();
+    $("#sliderWithValue").attr("disabled", "disabled");
+    $("#returnButton").removeClass("inactive");
+
     // resetZoom();
+
     
     frozen = true;
     
@@ -39,11 +42,14 @@ function showTopicModel(data) {
             </div>
             <div class="dropdown-menu" id="dropdown-menu-bottom" role="menu">
             <div class="dropdown-content">
-                ${Object.values(data["names"]).map(topic => `<a href="#" class="dropdown-item">${topic}</a>`).join('')}
+                <a href="#" class="add-topics dropdown-item">+ Add topic(s)</a>
+                ${Object.values(data["names"]).map(topic => `<a href="#" class="dropdown-item topic-name">${topic}</a>`).join('')}
             </div>
             </div>
         </div>
             `);
+
+
 
     const leftButtonGroup = svg.append('foreignObject')
         .attr('class', 'left-button-group')
@@ -62,7 +68,8 @@ function showTopicModel(data) {
             </div>
             <div class="dropdown-menu" id="dropdown-menu-left" role="menu">
             <div class="dropdown-content">
-                ${Object.values(data["names"]).map(topic => `<a href="#" class="dropdown-item">${topic}</a>`).join('')}
+                <a href="#" class="add-topics">+ Add topic(s)</a>
+                ${Object.values(data["names"]).map(topic => `<a href="#" class="dropdown-item topic-name">${topic}</a>`).join('')}
             </div>
             </div>
         </div>
@@ -130,7 +137,7 @@ function showTopicModel(data) {
         .attr('height', 100)
         .lower();     
       
-    svg.append('rect')
+    topicBackground = svg.append('rect')
         .attr('class', 'topicBackground')
         .attr('width', width)
         .attr('height', height)
@@ -141,6 +148,8 @@ function showTopicModel(data) {
       
     simulation.stop();
     $(".link").remove();
+    $(".topicLabel").remove();
+    
     node
         .transition(d3.transition().duration(1000))
         .attr('transform', d => `translate(${data["probs"][d.id][0] * width}, ${height - (data["probs"][d.id][1] * height)})`);
@@ -159,7 +168,7 @@ function showTopicModel(data) {
       }
 
     // Add event listeners for dropdown items
-    $('#dropdown-menu-bottom .dropdown-item').click(function() {
+    $('#dropdown-menu-bottom .topic-name').click(function() {
         const selectedTopic = $(this).text();
         $('#bottom-button-text').text(selectedTopic);
         $('.bottom-button-group .dropdown').removeClass('is-active');
@@ -170,7 +179,7 @@ function showTopicModel(data) {
         .attr('transform', d => `translate(${data["probs"][d.id][xTopicID] * width}, ${height - (data["probs"][d.id][yTopicID] * height)})`);
     });
 
-    $('#dropdown-menu-left .dropdown-item').click(function() {
+    $('#dropdown-menu-left .topic-name').click(function() {
         const selectedTopic = $(this).text();
         $('#left-button-text').text(selectedTopic);
         $('.left-button-group .dropdown').removeClass('is-active');
@@ -179,6 +188,14 @@ function showTopicModel(data) {
         node
         .transition(d3.transition().duration(1000))
         .attr('transform', d => `translate(${data["probs"][d.id][xTopicID] * width}, ${height - (data["probs"][d.id][yTopicID] * height)})`);
+    });
+
+    $(".add-topics").click(function() {
+        showTopicMenu();
+    });
+
+    $(".modal-background, .modal-close").click(function() {
+        hideTopicMenu();
     });
 
     function handleBottomButtonClick() {
@@ -190,8 +207,88 @@ function showTopicModel(data) {
         console.log('Left button clicked');
         // Add your logic here
     }
+
+    topicMode = true;
 }
 
-function moveNodes(x, y) {
-    
+function endTopicMode() {
+    $("#returnButton").addClass("inactive");
+    updateGraph();
+    // showTopicChart();
+    $("#sliderWithValue").removeAttr("disabled");
+    topicMode = false;
 }
+
+let initialTopics = [];
+let topicList = [];
+function showTopicMenu() {
+    $("#add-topic").addClass("is-active");
+    console.log(topics);
+    for (topicName of Object.values(topics["names"])) {
+        // Filter out automatic topic names (TODO: hacky)
+        if (topicName.includes("_")) {
+            continue;
+        }
+        const tag = document.createElement('span');
+        tag.textContent = topicName;
+        tag.classList.add('tag', 'is-primary');
+        $("#tagContainer").append(tag);
+
+        initialTopics.push(topicName);
+        topicList.push(topicName);
+    }
+}
+
+function hideTopicMenu() {
+    $("#add-topic").removeClass("is-active");
+    if ($('.bottom-button-group .dropdown').hasClass("is-active")) {
+        $('.bottom-button-group .dropdown').removeClass("is-active")
+    }
+    if ($('.left-button-group .dropdown').hasClass("is-active")) {
+        $('.left-button-group .dropdown').removeClass("is-active")
+    }
+}
+
+$("#topicInput").on("keypress", function(e) {
+    if(e.which != 13) {
+        return;
+    }    
+    const topicName = $(this).val();
+    if (topicName) {
+        const tag = document.createElement('span');
+        tag.textContent = topicName;
+        tag.classList.add('tag', 'is-primary');
+        $("#tagContainer").append(tag);
+        topicList.push(topicName);
+        topicInput.value = '';            
+    }
+});
+
+$("#cancelTopics").click(function(){
+    topicList = [];
+    hideTopicMenu();
+})
+
+$("#submitTopics").click(function(){
+    if (topicList.length == 0 || initialTopics.toString() === topicList.toString()) {
+        if ($("#topicInput").val() != '') {
+            topicList.push($("#topicInput").val())
+        }
+        else
+            return;
+    }
+    hideTopicMenu();
+    showProgressBar();
+    fetch('/add_topics', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({topics: topicList})
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideProgressBar();
+        setTopicData(data);
+    });
+})

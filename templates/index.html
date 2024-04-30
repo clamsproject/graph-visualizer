@@ -19,6 +19,13 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/dist/css/bulma-extensions.min.css">
 
+    <!-- Carousel -->
+    <script src="https://cdn.jsdelivr.net/npm/@glidejs/glide@3.6.0/dist/glide.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@glidejs/glide@3.6.0/dist/css/glide.core.min.css">
+
+    <!-- Wrod Cloud -->
+    <script src="https://cdn.jsdelivr.net/npm/d3-cloud@1.2.7/build/d3.layout.cloud.min.js"></script>
+
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
@@ -30,79 +37,291 @@
         </div>
 
         <!-- Filter Panel -->
-        <div class="card" id="filterPanel">
-            <header class="card-header" id="filterHeader">
-                <p class="card-header-title">Filter Nodes</p>
-                <button class="card-header-icon" aria-label="more options">
+        <div class="panel" id="filterPanel">
+            <div class="panel-heading" id="filterHeader">
+                <p class="panel-heading-title">Filter Nodes</p>
+                <button class="panel-heading-icon" aria-label="more options">
                     <span class="icon">
                         <i class="fa-solid fa-chevron-up" aria-hidden="true"></i>
                     </span>
                 </button>
-            </header>
-            <div class="card-content">
-                <div id="chartWrapper">
-                    <canvas id="pieChart"></canvas>
+            </div>
+            <div class="panel-content">
+                <div class="panel-block">
+                    <div class="glide">
+                        <div class="glide__track" data-glide-el="track">
+                            <ul class="glide__slides">
+                                <li class="glide__slide">
+                                    <div id="chartWrapper">
+                                        <canvas id="pieChart"></canvas>
+                                    </div>
+                                </li>
+                                <li class="glide__slide">
+                                    <div id="wordCloud"></div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="glide__arrows" data-glide-el="controls">
+                            <button class="glide__arrow glide__arrow--left" data-glide-dir="<">
+                                < </button>
+                                    <button class="glide__arrow glide__arrow--right" data-glide-dir=">">></button>
+                        </div>
+                    </div>
                 </div>
-                <input class="input" id="searchfield" type="text" placeholder="Search nodes" />
-                <div id="checkBoxWrapper">
-                    <label class="checkbox">
-                        <input type="checkbox" />
-                        Show filenames
-                    </label>
+                <div class="panel-block">
+                    <input class="input" id="searchfield" type="text" placeholder="Search nodes" />
                 </div>
-                <div id="sliderWrapper">
-                    <h4 class="title is-5" id="sliderText"></h4>
-                    <input id="sliderWithValue" class="slider has-output" min="1" max="3" value="1" step="1"
-                        type="range">
-                    <output for="sliderWithValue"></output>
+                <div class="panel-block">
+                    <div class="columns is-vcentered centeredPanel checkBoxPanel">
+                        <div class="column is-half">
+                            <label class="checkbox">
+                                <input type="checkbox" id="showFilenameBox" /> Show filenames
+                            </label>
+                        </div>
+                        <div class="column is-half">
+                            <label class="checkbox" id="clusterColorBoxWrapper">
+                                <input type="checkbox" id="clusterColorBox" checked="checked" disabled="disabled" />
+                                Show cluster colors
+                            </label>
+                        </div>
+                    </div>
                 </div>
-                <div id="clusterButtonsWrapper">
-                    <button class="button is-primary clusterButton" onclick="cluster()">Cluster</button>
-                    <button class="button is-info clusterButton" onclick="topicModel()">Topic Model</button>
+                <div class="panel-block">
+                    <div id="sliderWrapper">
+                        <h4 class="title is-5" id="sliderText"></h4>
+                        <input id="sliderWithValue" class="slider has-output" min="1" max="3" value="1" step="1"
+                            type="range">
+                        <output for="sliderWithValue"></output>
+                    </div>
+                </div>
+                <div class="panel-block">
+                    <div class="columns is-vcentered centeredPanel">
+                        <div class="column is-half">
+                            <button class="button is-primary clusterButton unclustered">Cluster</button>
+                        </div>
+                        <div class="column is-half">
+                            <button class="button is-info topicModelButton untopicmodeled">Topic Model</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <button class="button is-dark inactive" id="returnButton" onclick="enableFilterCard()">Return to graph view</button>
+        <button class="button is-dark inactive topicButton" id="topicChartButton" onclick="showTopicChart()">Show topic
+            chart</button>
+        <button class="button is-dark inactive topicButton" id="returnButton" onclick="endTopicMode()">Return to graph
+            view</button>
+        <!-- Add topic modal -->
+        <div class="modal" id="add-topic">
+            <div class="modal-background"></div>
+            <div class="modal-content">
+                <div class="panel is-primary">
+
+                    <div class="panel-heading">
+                        Add manual topics
+                    </div>
+
+
+                    <div class="panel-content">
+
+                        <div class="panel-block">
+                            <p>Add manual topics for <a
+                                    href="https://maartengr.github.io/BERTopic/getting_started/zeroshot/zeroshot.html#example"
+                                    target="_blank">zero-shot topic modeling.</a><br>
+                                If specifying multiple topics (recommended), enter each topic separately.<br>
+                                <b>NOTE:</b> If no documents are classified under a specified topic, it will be removed
+                                from the topic list and will not appear in the dropdown.
+                            </p>
+                        </div>
+
+                        <div class="panel-block" id="tags-block">
+                            <div class="field tagField">
+                                <div class="control">
+                                    <div class="tags are-medium" id="tagContainer"></div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="panel-block">
+                            <input class="input is-primary" id="topicInput" type="text"
+                                placeholder="Enter topic name" />
+                        </div>
+
+                        <div class="panel-block">
+                            <div class="field is-grouped">
+                                <div class="control">
+                                    <button class="button is-link" id="submitTopics">Submit</button>
+                                </div>
+                                <div class="control">
+                                    <button class="button is-link is-light" id="cancelTopics">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <div id="progressBarWrapper"></div>
+    </div>
+
+    <!-- Carousel script -->
     <script>
-        const searchField = document.getElementById('searchfield');
-        searchField.addEventListener('keydown', function(event) {
-            if (event.key === "Enter") {
-                search(searchField.value);
-                updateGraph();
-            }
+        var glideHero = new Glide('.glide', {
+            type: 'slider',
+            animationDuration: 1000,
+            autoplay: false,
+            dragThreshold: false
         });
 
-        function search(value) {
-            nodes.forEach(node => {
-                node.hidden = !(node.summary.includes(value)||node.label.includes(value));
-            });
+        glideHero.mount();
+
+    </script>
+
+    <!-- Search script -->
+    <script>
+        const searchField = document.getElementById('searchfield');
+        searchField.addEventListener('keydown', function (event) {
+            if (event.key === "Enter") {
+                searchFilter({ field: "all", value: searchField.value }, section = "searchbar");
+            }
+        });
+    </script>
+
+    <!-- Progress bar script -->
+    <script>
+        function showProgressBar() {
+            $("#progressBarWrapper").html(`
+                <progress class="progress is-small is-primary" max="100">15%</progress>
+            `);
+        }
+
+        function hideProgressBar() {
+            $("#progressBarWrapper").html("");
         }
     </script>
 
+    <!-- Cluster / topic modeling script -->
     <script>
+        let numClusters = 4;
+        $(".clusterButton").click(function () {
+            if ($(this).hasClass("unclustered")) {
+                $(this).removeClass("unclustered");
+                $(this).addClass("clustered");
+                $(this).text("Uncluster");
+                cluster();
+            } else {
+                $(this).removeClass("clustered");
+                $(this).addClass("unclustered");
+                $(this).text("Cluster");
+                uncluster();
+            }
+        });
+
         function cluster() {
+            $(".clusterButton").addClass("is-loading");
+            $(".topicModelButton").addClass("is-static");
             fetch("/cluster")
                 .then(response => response.json())
                 .then(data => {
+                    $(".clusterButton").removeClass("is-loading");
+                    $("#clusterColorBox").removeAttr("disabled");
+                    hideProgressBar();
                     nodes = data;
-                    numNodes = 4;
+                    clusterColors = getRandomColors(numClusters);
                     updateGraph();
                 })
         }
 
+        function uncluster() {
+            $("#clusterColorBox").attr("disabled", true);
+            $(".topicModelButton").removeClass("is-static");
+            svg.selectAll(".topicLabel").remove();
+            nodes.forEach(node => {
+                node.cluster = null;
+            });
+            updateGraph();
+            tick();
+        }
+
+        function argMax(array) {
+            return array.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1];
+        }
+
+        let clusterColors = [];
+        let topics;
+
+        $(".topicModelButton").click(function () {
+            if ($(this).hasClass("untopicmodeled")) {
+                topicModel();
+                $(this).removeClass("untopicmodeled");
+                $(this).addClass("topicmodeled");
+                $(this).text("Remove Topic Modeling");
+            } else {
+                unTopicModel();
+                $(this).removeClass("topicmodeled");
+                $(this).addClass("untopicmodeled");
+                $(this).text("Topic Model");
+            }
+        });
+
         function topicModel() {
+            $(".topicModelButton").addClass("is-loading");
+            $(".clusterButton").addClass("is-static");
             fetch("/topic_model")
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data);
-                    showTopicModel(data);
-                    // getScreenSpace()
-                    // nodes = data;
-                    // numNodes = 4;
-                    // updateGraph();
+                    $(".topicModelButton").removeClass("is-loading");
+                    $("#clusterColorBox").removeAttr("disabled");
+                    setTopicData(data);
                 })
+        }
+
+        function setTopicData(data) {
+            uncluster();
+            clusters = []
+                    probs = data["probs"];
+                    for (const [key, value] of Object.entries(probs)) {
+                        matchingNode = nodes.find(node => node.id == key);
+                        nodeProbs = value;
+                        topicNum = argMax(nodeProbs);
+                        if (!clusters.includes(topicNum)) {
+                            matchingNode.cluster = clusters.length;
+                            clusters.push(topicNum);
+                        }
+                        else {
+                            matchingNode.cluster = clusters.indexOf(topicNum);
+                        }
+                    }
+
+                    topics = data;
+
+                    numClusters = clusters.length;
+                    clusterColors = getRandomColors(numClusters);
+                    updateGraph();
+
+                    $("#topicChartButton").removeClass("inactive");
+        }
+
+        function unTopicModel() {
+            $("#clusterColorBox").attr("disabled", true);
+            $("#topicChartButton").addClass("inactive");
+            $(".clusterButton").removeClass("is-static");
+            if (!$("#returnButton").hasClass("inactive")) {
+                $("#returnButton").addClass("inactive");
+            }
+            if ($("#sliderWithValue").attr("disabled")) {
+                $("#sliderWithValue").removeAttr("disabled");
+            }
+            topics = null;
+            uncluster();
+        }
+
+        function showTopicChart() {
+            showTopicModel(topics);
+            $(this).addClass("inactive");
         }
     </script>
 
@@ -128,23 +347,30 @@
         bulmaSlider.attach();
     </script>
 
+
     <!-- Checkbox script -->
     <script>
-        const filenameCheckbox = document.querySelector('input[type="checkbox"]');
+        const filenameCheckbox = document.getElementById('showFilenameBox');
         filenameCheckbox.addEventListener('change', () => {
             $(".mmif-filename").css("display", function () {
                 return filenameCheckbox.checked ? "block" : "none";
             });
         });
+
+        const clusterColorCheckbox = document.getElementById('clusterColorBox');
+        clusterColorCheckbox.addEventListener('change', () => {
+            setNodeColors(clusterColorCheckbox.checked);
+        });
+
     </script>
 
 
-
-    <!-- Node View -->
+    <!-- Node View script -->
     <script type="text/html" id="mmif-node-template">
         {% include 'mmif_node.html' %}
     </script>
 
+    <!-- Panel script -->
     <script>
         $(document).ready(function () {
             $('#mmifPanel').data('panel-state', 'closed');
@@ -156,6 +382,7 @@
         });
     </script>
 
+    <!-- Dropzone script -->
     <script>
         let dropzoneInstance;
 
@@ -184,10 +411,14 @@
 
 
     <!-- Custom assets -->
+    <script src="{{ url_for('static', filename='tooltip.js') }}"></script>
     <script src="{{ url_for('static', filename='graph.js') }}"></script>
+    <script src="{{ url_for('static', filename='search.js') }}"></script>
     <script src="{{ url_for('static', filename='filter-panel.js') }}"></script>
-    <script src="{{ url_for('static', filename='mmif-panel.js') }}"></script>
+    <!-- <script src="{{ url_for('static', filename='mmif-panel.js') }}"></script> -->
     <script src="{{ url_for('static', filename='topic-model.js') }}"></script>
+    <script src="{{ url_for('static', filename='cluster.js') }}"></script>
+    <script src="{{ url_for('static', filename='cloud.js') }}"></script>
 
 </body>
 

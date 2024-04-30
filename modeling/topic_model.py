@@ -13,6 +13,7 @@ from bertopic.vectorizers import ClassTfidfTransformer
 from bertopic.representation import KeyBERTInspired
 from bertopic.representation import MaximalMarginalRelevance
 from scipy.special import softmax
+import torch
 
 # topics = [
 #     'Political Scandals',
@@ -55,23 +56,29 @@ from scipy.special import softmax
 #     hdbscan_model=hdbscan_model
 # )
 
+
+device = torch.device("cpu")
+
 topic_model = BERTopic.load(os.path.join(os.path.dirname(__file__), "../data/topic_newshour"))
 print("Loaded pretrained topic model.")
 
 def get_topics(docs):
     print("Getting topics...")
-    topic_distr, _ = topic_model.approximate_distribution(docs, batch_size=100)
+    preds, probs = topic_model.transform(docs)
+    # topic_distr, _ = topic_model.approximate_distribution(docs, batch_size=50, use_embedding_model=True)
     # Normalize for better visualization
-    topic_distr = (topic_distr - topic_distr.min(axis=0)) / (topic_distr.max(axis=0) - topic_distr.min(axis=0))
+    print("Normalizing...")
+    probs = (probs - probs.min(axis=0)) / (probs.max(axis=0) - probs.min(axis=0))
     # Remove NaNs
-    topic_distr[topic_distr != topic_distr] = 0
+    print("Removing NaNs...")
+    probs[probs != probs] = 0
     # print(topic_distr)
     # print("----------->")
     # topic_distr = softmax(topic_distr, axis=1)
     # print(topic_distr)
     topic_info = topic_model.get_topic_info()
     topic_names = {topic: name for topic, name in zip(topic_info["Topic"], topic_info["Name"])}
-    return topic_names, topic_distr.tolist()
+    return topic_names, probs.tolist()
 
 def remove_stop_words(text):
     stop_words = set(stopwords.words('english'))
@@ -87,20 +94,43 @@ def preprocess_text(text):
     text = remove_stop_words(text)
 
 
-def train_topic_model():
+def train_topic_model(zeroshot_topics = []):
+    # TODO: Get token-level contributions? (stretch goal)
     vectorizer_model = CountVectorizer(stop_words="english")
     # ctfidf_model = ClassTfidfTransformer(reduce_frequent_words=True)
     # representation_model = MaximalMarginalRelevance(diversity=0.1)
 
-    topic_model = BERTopic(vectorizer_model=vectorizer_model)
+
+    topic_model = BERTopic(
+        vectorizer_model=vectorizer_model,
+        # seed_topic_list=seed_topic_list
+        # min_topic_size=10,
+        
+        # ctfidf_model=ctfidf_model,
+        zeroshot_topic_list=zeroshot_topics,
+        zeroshot_min_similarity=.5,
+        calculate_probabilities=True,
+        # representation_model=KeyBERTInspired(),
+        # low_memory=True
+    )
+
     tqdm.pandas()
-    data = pd.read_csv("../data/transcripts.csv")
+    data = pd.read_csv(os.path.join(os.path.dirname(__file__), "../data/transcripts.csv"))
     data = data.dropna()
     # data['transcript'] = data['transcript'].progress_apply(preprocess_text)
+    # data["transcript"] = data["transcript"].progress_apply(lambda x: x[:5000])
     print("Training topic model...")
     topic_model.fit(data['transcript'])
-    topic_model.save("../data/topic_newshour")
+    # preds, probs = topic_model.transform(data['transcript'])
+    # print(probs)
+    # input()
+    topic_model.save(os.path.join(os.path.dirname(__file__), "../data/topic_newshour"))
     print("Trained topic model.")
+
+    # print("Getting distribution")
+    # # topic_distr, _ = topic_model.approximate_distribution(data['transcript'], batch_size=500, use_embedding_model=True)
+    # topic_distr, _ = topic_model.approximate_distribution(data['transcript'][:1000], batch_size=500)
+
     print(topic_model.get_topic_info()["Name"])
 
 if __name__ == "__main__":

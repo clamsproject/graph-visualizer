@@ -91,6 +91,7 @@ body, html {
 
 #chartWrapper {
   margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 #mmifPanel {
@@ -98,14 +99,19 @@ body, html {
   text-align: center;
 }
 
-.panel-header {
-  background-color: lightgray;
+.panel-heading {
+  /* background-color: lightgray; */
   padding: 10px;
   cursor: pointer;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  cursor: pointer;
+}
+
+.panel {
+  z-index: 50;
 }
 
 .fa-square-caret-down.rotated {
@@ -192,20 +198,43 @@ g {
 }  
 
 #sliderWrapper {
-  margin: 10px;
+  /* margin: 10px;
   margin-left: 50px;
-  margin-right: 50px;
+  margin-right: 50px; */
+  flex: 1;
+  margin-top: 10px;
+}
+
+.checkBoxPanel {
+  display: flex;
+  justify-content: space-around;
+  margin: 10px;
+  margin-left: 50px !important;
+  margin-right: 50px !important;
 }
 
 .entitytag {
   margin: 5px;
 }
 
-#checkBoxWrapper {
+/* #checkBoxWrapper {
   margin: 10px;
-  margin-left: 50px;
-  margin-right: 50px;
+  margin-left: 100px;
+  margin-right: 100px;
   margin-bottom: 20px;
+  display: flex !important;
+  justify-content: space-around !important;
+} */
+
+
+
+.panel-block {
+  background-color: white;
+  display: flex;
+}
+
+#clusterColorBoxWrapper {
+  margin-left: 20px;
 }
 
 #filterButton {
@@ -234,8 +263,16 @@ g {
 }
 
 .clusterButton {
-  flex: 1;
-  margin: 10px;
+  /* flex: 1 !important;
+  margin: 10px; */
+  width: 100%;
+  cursor: pointer !important;
+}
+
+.topicModelButton {
+  /* flex: 1 !important;
+  margin: 10px; */
+  width: 100%;
   cursor: pointer !important;
 }
 
@@ -251,16 +288,30 @@ g {
   margin-bottom: 20px;
   cursor: pointer;
   position: absolute;
+  z-index: 10;
   right: 30%;
   top: 10px;
   height: 48px;
 }
 
-#returnButton.inactive {
+#topicChartButton {
+  margin: 10px;
+  margin-left: 50px;
+  margin-right: 50px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  position: absolute;
+  z-index: 10;
+  right: 30%;
+  top: 10px;
+  height: 48px;
+}
+
+.topicButton.inactive {
   display: none;
 }
 
-#returnButton.active {
+.topicButton.active {
   display: block;
 }
 
@@ -268,3 +319,116 @@ g {
   max-height: 13em;
   overflow: scroll !important;
 }
+
+/* .card-summary {
+  overflow: scroll !important;
+} */
+
+/* CAROUSEL STYLES */
+.wrap {
+  max-width: 900px;
+  margin: 0 auto;
+}
+.glide__slide {
+  /* border: 1px solid black; */
+  /* line-height: 100px; */
+  margin: 0;
+  text-align: center;
+}
+
+.glide__arrow {
+  background-color: #F0F0F0;
+  border: 0px solid #ccc;
+  border-radius: 50%;
+  color: #404654 !important;
+  font-size: 20px;
+  height: 40px;
+  line-height: 40px;
+  margin: 0 10px;
+  position: absolute;
+  text-align: center;
+  top: 50%;
+  width: 40px;
+  z-index: 10;
+  cursor: pointer !important;
+}
+
+.glide__arrow--left {
+  left: 0;
+}
+
+.glide__arrow--right {
+  right: 0;
+}
+
+#wordCloud {
+  padding: 10px;
+}
+
+#progressBarWrapper {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+
+.cloudHover {
+  cursor: pointer !important;
+}
+
+.cloudSelected {
+  fill: black !important;
+}
+
+.centeredPanel {
+  flex: 1;
+  /* width: 100% */
+}
+
+.panel-content {
+  width: 100%;
+  height: 100%;
+  margin: 0px !important;
+  padding: 0px !important;
+  /* background-color: white; */
+}
+
+.modal-close {
+  cursor: pointer !important;
+}
+
+.panel.is-primary {
+  margin-bottom: 0px !important;
+}
+
+.input {
+  cursor: text !important;
+}
+
+button {
+  cursor: pointer !important;
+}
+
+.tagField {
+  background-color: white;
+  margin: 0px !important;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+/* #tagContainer {
+  margin: 10px;
+} */
+
+#topicInputContainer {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#tags-block {
+  border-bottom: 0px !important;
+}
+
+a {
+  cursor: pointer !important;
+}
+
