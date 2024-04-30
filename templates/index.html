@@ -274,7 +274,6 @@
                 .then(response => response.json())
                 .then(data => {
                     $(".topicModelButton").removeClass("is-loading");
-                    $("#clusterColorBox").removeAttr("disabled");
                     setTopicData(data);
                 })
         }
@@ -303,6 +302,7 @@
                     updateGraph();
 
                     $("#topicChartButton").removeClass("inactive");
+                    $("#clusterColorBox").removeAttr("disabled");
         }
 
         function unTopicModel() {
