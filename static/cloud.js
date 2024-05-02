@@ -1,6 +1,7 @@
 let hoveredEntity = null;
 
 function renderCloud() {
+  d3.select("#wordCloud").selectAll("*").remove();
   [wordCounts, maxCount] = getAllDocWords();
   var layout = d3.layout.cloud()
     .size([430, 300])

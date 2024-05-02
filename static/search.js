@@ -15,12 +15,18 @@ function updateGraphSearch() {
             else if (v.field == "all") {
                 if (Object.values(mmifNode).some(value => typeof value == "string" &&
                     value.toLowerCase().includes(v.value.toLowerCase()))) {
-
                         matches++;
-
                     }
 
             }
+
+            else if (v.field == "date") {
+                nodeYear = new Date(mmifNode.date).getFullYear();
+                if (v.value.includes(nodeYear)) {
+                    matches++;
+                }
+            }
+
             else if (mmifNode[v.field].some(app => v.value.includes(app))) {
                 matches++;
             }
@@ -35,6 +41,7 @@ function updateGraphSearch() {
     
     tick();
     if (!frozen) updateGraph();
+    renderCloud();
 
 }
 

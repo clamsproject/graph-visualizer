@@ -64,7 +64,7 @@ def summarize_from_text(asr_text: View):
         summaries = [generate_abstractive_summary(chunk, max_len=int(
             math.floor(MAX_LEN/len(chunks)))) for chunk in tqdm(chunks)]
         asr_text = " ".join(summaries)
-    return generate_abstractive_summary(asr_text)
+    return generate_abstractive_summary(asr_text), asr_text
 
 
 def generate_abstractive_summary(asr_text: str, max_len=150):
@@ -79,8 +79,8 @@ def summarize_file(mmif: Mmif):
     else:
         asr_views = get_asr_views(mmif)
         asr_text = get_asr_text(asr_views[0])
-    summary = summarize_from_text(asr_text)
-    return summary, asr_text
+    summary, long_summary = summarize_from_text(asr_text)
+    return summary, long_summary, asr_text
 
 
 def fine_tune():

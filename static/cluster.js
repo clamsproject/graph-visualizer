@@ -4,7 +4,8 @@ const clusterCenterHTML = `
 `
 
 
-function renderClusters(numClusters) {
+function renderClusters(numClusters, summaries=null) {
+
     clusterLinks = [];
     clusterNodes = [];
     for (let i = 0; i < numClusters; i++) {
@@ -70,6 +71,49 @@ function renderClusters(numClusters) {
     //     .style('height', `0`)
     //     .html(clusterCenterHTML);
     }
+    else if (summaries) {
+        clusterCenters = clusterNode.append('g')
+            .attr('class', 'clusterSummary');
+
+        clusterCenters.append('circle')
+            .attr('r', nodeRadius/2)
+            .attr('fill', 'white')
+            .attr('stroke', d => clusterColors[d.cluster])
+            .append('text')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('text-anchor', 'middle')
+            .attr('alignment-baseline', 'middle')
+            .attr('fill', 'black')
+            .text('?');
+
+        clusterCenters.on('click', (event, d) => {
+            const selectedCircle = d3.select(event.target);
+            const selectedCluster = selectedCircle.select(function() {
+                return this.parentNode;
+            });
+            // if (clickedNode === d) {
+            //     // If the same node is clicked again, toggle the tooltip
+            //     selectedCircle.classed('clicked', false);
+            //     nodeGroup = node.filter(data => data.id === d.id);
+            //     nodeGroup.select('.tooltip').remove();
+            //     // Lowering nodes in topic modeling mode breaks the chart
+            //     if (!topicMode) {
+            //         nodeGroup.lower();
+            //         link.lower();
+            //         clusterLink.lower();    
+            //     }
+            //     clickedNode = null; // Reset the clicked node
+            // } else {
+                // selectedCircle.classed('clicked', true);
+                // clickedNode = d; // Store the clicked node
+                createSummaryTooltip(selectedCluster, summaries[d["cluster"]], event); // Pass the node selection, data, and event
+            // }
+        });
+        
+
+    }
+    
     else {
     clusterCenters = clusterNode.append('foreignObject')
         .attr('width', 0)
@@ -91,6 +135,8 @@ function renderClusters(numClusters) {
 
     simulation.alpha(1).restart(); // Restart the simulation
 }
+
+// function add
 
 function getRandomColors(n) {
     var colors = [];
@@ -114,3 +160,4 @@ const randomColor = (() => {
       return `hsl(${h},${s}%,${l}%)`;
     };
   })();
+

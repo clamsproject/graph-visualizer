@@ -34,8 +34,8 @@ const svg = d3.select('#graphWrapper')
   .append('g');
 
 const colorScale = d3.scaleLinear()
-    .domain([1, 3])
-    .range(['#999', '#333'])
+    .domain([0, 1])
+    .range(['#eeeeee', '#152238'])
     .clamp(true);
 
 let links;
@@ -47,8 +47,12 @@ function setLinks(manualLinks = null) {
         for (let i = 0; i < nodes.length; i++) {
             for (let j = i + 1; j < nodes.length; j++) {
                 const sharedEntities = nodes[i].entities.filter(entity => nodes[j].entities.includes(entity));
-                if (sharedEntities.length >= entitySlider.value && nodes[i].hidden == false && nodes[j].hidden == false) {
-                    links.push({ source: nodes[i].id, target: nodes[j].id, weight: sharedEntities.length, sharedEntities: sharedEntities });
+                weight = ((sharedEntities.length*2)/(nodes[i].entities.length + nodes[j].entities.length))
+                if (weight*100 >= entitySlider.value && nodes[i].hidden == false && nodes[j].hidden == false) {
+                    links.push({ source: nodes[i].id, 
+                                 target: nodes[j].id, 
+                                 weight: weight, 
+                                 sharedEntities: sharedEntities });
                 }
             }
         }    
@@ -60,8 +64,8 @@ function setLinks(manualLinks = null) {
         .enter()
         .append('line')
         .attr('class', 'link')
-        .attr('stroke-width', d => d.weight || 1)
-        .attr('stroke', d => colorScale(d.sharedEntities.length)); // Set stroke color based on weight
+        .attr('stroke-width', d => (d.weight * (nodeRadius/2)) || 1) // Max stroke width should be node radius
+        .attr('stroke', d => colorScale(d.weight)); // Set stroke color based on weight
 }
 
 setLinks();
@@ -75,6 +79,7 @@ function setNodes() {
     $(".node").remove();
     $(".mmif-filename").remove();
     $(".tooltip").remove(); // Remove existing tooltips
+    $(".clusterSummary").remove();
 
     // Add the nodes as SVG circles and text
     node = svg.selectAll('.node')
@@ -151,12 +156,12 @@ let simulation;
 
 function setSimulation() {
     // stop the simulation if it's already running
-    if (simulation) {
-        simulation.stop();
+    if (!simulation) {
+        simulation = d3.forceSimulation();
     }
     
     // Create the simulation
-    simulation = d3.forceSimulation()
+    simulation
         .nodes(nodes)
         .force('center', d3.forceCenter(width / 2, height / 2))
         .force("charge", d3.forceManyBody().strength(-1000))
@@ -214,7 +219,7 @@ function tick() {
             .style('opacity', 0.2);
     } else if (hoveredEntity != null) {
         resetNodes();
-        node.filter(d => !(d.transcript.includes(hoveredEntity)))
+        node.filter(d => !(d.entities.includes(hoveredEntity)))
             .select('circle')
             .style('opacity', 0.2);
     } else {
@@ -282,6 +287,7 @@ function updateGraph(manualLinks=null) {
     setLinks(manualLinks);
     // setLinkOverlays();
     setNodes();
+
     setSimulation();
 
     setNodeColors(clusterColorCheckbox.checked);

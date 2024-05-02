@@ -15,6 +15,10 @@ from bertopic.representation import MaximalMarginalRelevance
 from scipy.special import softmax
 import torch
 
+from bertopic import BERTopic
+from bertopic.representation import MaximalMarginalRelevance
+from sentence_transformers import SentenceTransformer
+
 # topics = [
 #     'Political Scandals',
 #     'Military Conflicts',
@@ -93,23 +97,32 @@ def preprocess_text(text):
     print("Preprocessing...")
     text = remove_stop_words(text)
 
+def remove_speaker_names(text):
+    speaker_split = text.split(":")
+    if len(speaker_split) > 1 and len(speaker_split[0]) < 30:
+        return ":".join(speaker_split[1:])
+    return text
 
 def train_topic_model(zeroshot_topics = []):
     # TODO: Get token-level contributions? (stretch goal)
+    sentence_model = SentenceTransformer("all-MiniLM-L6-v2")
+    # embeddings = sentence_model.encode(docs, show_progress_bar=False)
     vectorizer_model = CountVectorizer(stop_words="english")
     # ctfidf_model = ClassTfidfTransformer(reduce_frequent_words=True)
-    # representation_model = MaximalMarginalRelevance(diversity=0.1)
+    # representation_model = MaximalMarginalRelevance(diversity=0.005)
 
 
     topic_model = BERTopic(
         vectorizer_model=vectorizer_model,
         # seed_topic_list=seed_topic_list
-        # min_topic_size=10,
+        min_topic_size=50,
         
         # ctfidf_model=ctfidf_model,
-        zeroshot_topic_list=zeroshot_topics,
-        zeroshot_min_similarity=.5,
+        zeroshot_topic_list=zeroshot_topics if zeroshot_topics else None,
+        zeroshot_min_similarity=.5 if zeroshot_topics else None,
         calculate_probabilities=True,
+        # representation_model=representation_model,
+        embedding_model=sentence_model,
         # representation_model=KeyBERTInspired(),
         # low_memory=True
     )
@@ -117,6 +130,8 @@ def train_topic_model(zeroshot_topics = []):
     tqdm.pandas()
     data = pd.read_csv(os.path.join(os.path.dirname(__file__), "../data/transcripts.csv"))
     data = data.dropna()
+    print("removing speaker names...")
+    data["transcript"] = data["transcript"].progress_apply(remove_speaker_names)
     # data['transcript'] = data['transcript'].progress_apply(preprocess_text)
     # data["transcript"] = data["transcript"].progress_apply(lambda x: x[:5000])
     print("Training topic model...")

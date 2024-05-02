@@ -12,10 +12,12 @@
     <script
         src="https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/bulma-quickview/dist/js/bulma-quickview.min.js"></script>
 
+    <!-- Main stylesheet -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/dist/css/bulma-extensions.min.css">
 
@@ -59,6 +61,9 @@
                                 <li class="glide__slide">
                                     <div id="wordCloud"></div>
                                 </li>
+                                <li class="glide__slide">
+                                    <div id="timeline"></div>
+                                </li>
                             </ul>
                         </div>
                         <div class="glide__arrows" data-glide-el="controls">
@@ -89,7 +94,7 @@
                 <div class="panel-block">
                     <div id="sliderWrapper">
                         <h4 class="title is-5" id="sliderText"></h4>
-                        <input id="sliderWithValue" class="slider has-output" min="1" max="3" value="1" step="1"
+                        <input id="sliderWithValue" class="slider has-output" min="10" max="100" value="25" step="5"
                             type="range">
                         <output for="sliderWithValue"></output>
                     </div>
@@ -110,6 +115,8 @@
             chart</button>
         <button class="button is-dark inactive topicButton" id="returnButton" onclick="endTopicMode()">Return to graph
             view</button>
+        <button class="button is-dark inactive topicButton" id="clusterExplanationButton" onclick="showClusterExplanations()">Show cluster explanations</button>
+    
         <!-- Add topic modal -->
         <div class="modal" id="add-topic">
             <div class="modal-background"></div>
@@ -211,11 +218,14 @@
                 $(this).removeClass("unclustered");
                 $(this).addClass("clustered");
                 $(this).text("Uncluster");
+                $("#clusterExplanationButton").removeClass("inactive");
                 cluster();
             } else {
                 $(this).removeClass("clustered");
                 $(this).addClass("unclustered");
                 $(this).text("Cluster");
+                if (!$("#clusterExplanationButton").hasClass("inactive"))
+                    $("#clusterExplanationButton").addClass("inactive");
                 uncluster();
             }
         });
@@ -323,30 +333,32 @@
             showTopicModel(topics);
             $(this).addClass("inactive");
         }
+
+        function showClusterExplanations() {
+            showProgressBar();
+            nodeCopy = [ ...nodes ];
+            nodeCopy = nodeCopy.map(d => {
+                return {
+                        id: d.id,
+                        summary: d.summary,
+                        cluster: d.cluster
+                       }
+            })
+            fetch("/summarize_clusters", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({nodes: nodeCopy})
+            })
+            .then(response => response.json())
+            .then(data => {
+                // showClusterExplanationsModal(data);
+                renderClusters(data.length, summaries=data)
+                hideProgressBar();
+            })
+        }
     </script>
-
-
-    <!-- Slider script -->
-    <script>
-        const entitySlider = document.getElementById('sliderWithValue');
-        const output = document.querySelector('output[for="sliderWithValue"]');
-
-        output.textContent = entitySlider.value; // Set initial value
-
-        entitySlider.addEventListener('input', () => {
-            output.textContent = entitySlider.value;
-            const entityNumber = entitySlider.value == 1 ? "entity" : "entities";
-            valueSpan = `<span style="color: #FF4A1C !important;">${entitySlider.value}</span>`
-            $("#sliderText").html(`Draw links for every ${valueSpan} shared ${entityNumber}`);
-            updateGraph();
-        });
-
-        const entityNumber = entitySlider.value == 1 ? "entity" : "entities";
-        valueSpan = `<span style="color: #FF4A1C !important;">${entitySlider.value}</span>`
-        $("#sliderText").html(`Draw links for every ${valueSpan} shared ${entityNumber}`);
-        bulmaSlider.attach();
-    </script>
-
 
     <!-- Checkbox script -->
     <script>
@@ -362,12 +374,6 @@
             setNodeColors(clusterColorCheckbox.checked);
         });
 
-    </script>
-
-
-    <!-- Node View script -->
-    <script type="text/html" id="mmif-node-template">
-        {% include 'mmif_node.html' %}
     </script>
 
     <!-- Panel script -->
@@ -415,10 +421,39 @@
     <script src="{{ url_for('static', filename='graph.js') }}"></script>
     <script src="{{ url_for('static', filename='search.js') }}"></script>
     <script src="{{ url_for('static', filename='filter-panel.js') }}"></script>
-    <!-- <script src="{{ url_for('static', filename='mmif-panel.js') }}"></script> -->
     <script src="{{ url_for('static', filename='topic-model.js') }}"></script>
     <script src="{{ url_for('static', filename='cluster.js') }}"></script>
     <script src="{{ url_for('static', filename='cloud.js') }}"></script>
+    <script src="{{ url_for('static', filename='timeline.js') }}"></script>
+
+    
+    <!-- Slider script -->
+    <script>
+        // (needs to come after graph.js to access nodes)
+        const entitySlider = document.getElementById('sliderWithValue');
+        const output = document.querySelector('output[for="sliderWithValue"]');
+
+        nodesPromise.then(() => {
+            output.textContent = entitySlider.value;
+
+            entitySlider.addEventListener('mouseup', () => {
+                updateGraph();
+            });
+
+            entitySlider.addEventListener('mousemove', () => {
+                output.textContent = entitySlider.value;
+                const entityNumber = entitySlider.value == 1 ? "entity" : "entities";
+                valueSpan = `<span style="color: #FF4A1C !important;">${entitySlider.value}%</span>`;
+                $("#sliderText").html(`Draw links when nodes share ${valueSpan} of entities`);
+            });
+
+            const entityNumber = entitySlider.value == 1 ? "entity" : "entities";
+            valueSpan = `<span style="color: #FF4A1C !important;">${entitySlider.value}%</span>`;
+            $("#sliderText").html(`Draw links when nodes share ${valueSpan} of entities`);
+            bulmaSlider.attach();
+        });
+</script>
+
 
 </body>
 
