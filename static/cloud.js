@@ -48,16 +48,31 @@ function renderCloud() {
 nodesPromise.then(renderCloud);
 
 function getAllDocWords() {
-  counts = {}
-  max = 0;
+  const wordSet = new Set();
+  let max = 0;
+
   for (let i = 0; i < nodes.length; i++) {
     if (nodes[i].hidden) continue;
-    nodes[i].entities.forEach(entity => {
-      if (entity in counts) counts[entity] += 1;
-      else counts[entity] = 1;
-      max = Math.max(max, counts[entity]);
-    });
+
+    for (const entity of nodes[i].entities) {
+      wordSet.add(entity);
+    }
   }
+
+  const counts = {};
+  for (const word of wordSet) {
+    counts[word] = 0;
+  }
+
+  for (let i = 0; i < nodes.length; i++) {
+    if (nodes[i].hidden) continue;
+
+    for (const entity of nodes[i].entities) {
+      counts[entity]++;
+      max = Math.max(max, counts[entity]);
+    }
+  }
+
   return [counts, max];
 }
 

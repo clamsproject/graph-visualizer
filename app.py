@@ -11,6 +11,7 @@ from modeling.ner import get_entities
 from modeling.cluster import cluster_nodes
 from modeling.topic_model import get_topics, train_topic_model
 from modeling.date import extract_date
+from modeling.thumbnails import get_thumbnail
 
 from db import insert_data, get_all_data, delete_data
 
@@ -30,7 +31,16 @@ def index():
 @app.route('/all-nodes')
 def get_all_nodes():
     nodes = get_all_data("nodes")
-    nodes = [(id, label, apps.split(","), summary, long_summary, transcript, entities.split(","), date, temp, hidden) for id, label, apps, summary, long_summary, transcript, entities, date, temp, hidden in nodes]
+    nodes = [(id, 
+              label, 
+              apps.split(","), 
+              summary, 
+              long_summary,
+              transcript, 
+              entities.split(","), 
+              date, 
+              temp, 
+              hidden) for id, label, apps, summary, long_summary, transcript, entities, date, temp, hidden in nodes]
     nodes = [dict(zip(["id", "label", "apps", "summary", "long_summary", "transcript", "entities", "date", "temp", "hidden"], node)) for node in nodes]
     return nodes 
 
@@ -55,6 +65,7 @@ def upload():
         summary, long_summary, transcript = summarize_file(mmif)
         entities = get_entities(transcript)
         date = extract_date(filename, mmif)
+        thumnail_path = get_thumbnail(mmif)
         apps = [str(view.metadata.app) for view in mmif.views]
         new_node = { 'id': filename, 
                      'label': filename, 
@@ -67,7 +78,7 @@ def upload():
                      'temp': False, 
                      'hidden': False }        
         insert_data("nodes", new_node)
-        # Un-stringify apps list to pass back to the app
+        # Un-stringify list entries to pass back to the app
         new_node['apps'] = new_node['apps'].split(",")
         new_node['entities'] = new_node['entities'].split(",")
         return json.dumps(new_node)

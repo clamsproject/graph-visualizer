@@ -7,8 +7,8 @@ import time
 from datetime import datetime
 
 
-with open("/home/hayden/clams/mmif_files/just_transcript/just_transcript/cpb-aacip-507-0g3gx4598v.trn.mmif", "r") as f:
-    TEST_MMIF = Mmif(f.read())
+# with open("/home/hayden/clams/mmif_files/just_transcript/just_transcript/cpb-aacip-507-0g3gx4598v.trn.mmif", "r") as f:
+#     TEST_MMIF = Mmif(f.read())
 
 def match_guid(text):
     match = re.match(r"cpb-aacip-.+-\w+", text)
@@ -33,5 +33,5 @@ def extract_date(filename, mmif):
     d = random.randint(1, int(time.time()))
     return datetime.fromtimestamp(d).strftime('%Y-%m-%d')
 
-if __name__ == "__main__":
-    print(extract_date("cpb-aacip-507-0g3gx4598v.trn", TEST_MMIF))
+# if __name__ == "__main__":
+#     print(extract_date("cpb-aacip-507-0g3gx4598v.trn", TEST_MMIF))

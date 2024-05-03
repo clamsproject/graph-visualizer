@@ -54,6 +54,7 @@ function createTooltip(nodeSelection, d, event) {
         <div class="card-content card-summary">
             <p>${d.summary}</p>
             ${entityTags}
+            <img src="https://dummyimage.com/300">
         </div>
         <footer class="card-footer">
             <a href="#" class="card-footer-item">Visualize</a>
