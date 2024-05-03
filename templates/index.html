@@ -74,6 +74,9 @@
                     </div>
                 </div>
                 <div class="panel-block">
+                    <div id="searchTags"></div>
+                </div>
+                <div class="panel-block">
                     <input class="input" id="searchfield" type="text" placeholder="Search nodes" />
                 </div>
                 <div class="panel-block">
@@ -213,6 +216,8 @@
     <!-- Cluster / topic modeling script -->
     <script>
         let numClusters = 4;
+        let clusterSummaries = null;
+
         $(".clusterButton").click(function () {
             if ($(this).hasClass("unclustered")) {
                 $(this).removeClass("unclustered");
@@ -249,9 +254,11 @@
             $("#clusterColorBox").attr("disabled", true);
             $(".topicModelButton").removeClass("is-static");
             svg.selectAll(".topicLabel").remove();
+
             nodes.forEach(node => {
                 node.cluster = null;
             });
+            clusterSummaries = null;
             updateGraph();
             tick();
         }
@@ -335,7 +342,8 @@
         }
 
         function showClusterExplanations() {
-            showProgressBar();
+            // showProgressBar();
+            $("#clusterExplanationButton").addClass("is-loading")
             nodeCopy = [ ...nodes ];
             nodeCopy = nodeCopy.map(d => {
                 return {
@@ -354,8 +362,13 @@
             .then(response => response.json())
             .then(data => {
                 // showClusterExplanationsModal(data);
-                renderClusters(data.length, summaries=data)
-                hideProgressBar();
+                clusterSummaries = data;
+                updateGraph();
+                // hideProgressBar();
+                if (!$("#clusterExplanationButton").hasClass("inactive"))
+                    $("#clusterExplanationButton").addClass("inactive");
+                if ($("#returnButton").hasClass("is-loading"))
+                    $("#returnButton").removeClass("is-loading");
             })
         }
     </script>

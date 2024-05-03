@@ -1,6 +1,7 @@
 let hoveredEntity = null;
 
 function renderCloud() {
+  console.log("Rendering cloud...")
   d3.select("#wordCloud").selectAll("*").remove();
   [wordCounts, maxCount] = getAllDocWords();
   var layout = d3.layout.cloud()
@@ -39,6 +40,8 @@ function renderCloud() {
 
       .text(function(d) { return d.text; });
   }
+
+  console.log("Done rendering cloud.")
 }
 
 // Call the cloud layout function when the DOM is ready

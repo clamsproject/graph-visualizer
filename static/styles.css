@@ -521,3 +521,16 @@ a {
   stroke: #000 !important;
   stroke-width: 5px !important;
 }
+
+.searchTag {
+  display: flex;
+  justify-content: space-between;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+.searchTag > * {
+  margin-left: 5px;
+  margin-right: 5px;
+  cursor: pointer !important;
+}

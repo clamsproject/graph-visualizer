@@ -2,14 +2,13 @@ nodesPromise.then(() => drawTimeline());
 
 function drawTimeline() {
 
+    console.log("Rendering timeline...")
     dates = nodes.map(d => {
         const dateString = Date.parse(d.date);
         if (isNaN(dateString)) return null;
         const date = new Date(dateString);
         return date.getFullYear();
     });
-
-    console.log(dates);
 
     const startYear = Math.min(...dates)-1;
     const endYear = Math.max(...dates)+1;
@@ -81,8 +80,8 @@ function drawTimeline() {
     for (const date of dates) {
         const dateX = getDatePosition(date);
         if (date in dateY) {
-            bottom = `${dateY[date]}px`;
             dateY[date] += 10;
+            bottom = `${dateY[date]}px`;
         }
         else {
             bottom = '10px';
@@ -98,6 +97,8 @@ function drawTimeline() {
         else
             circleElems[dateX] = [$circle]
     }
+
+    console.log(dateY);
 
     function updateSelectionBox(start, end) {
         const left = Math.min(start, end);

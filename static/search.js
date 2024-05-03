@@ -43,6 +43,34 @@ function updateGraphSearch() {
     if (!frozen) updateGraph();
     renderCloud();
 
+    $("#searchTags").empty();
+    for (const [k, v] of Object.entries(queries)) {
+
+        let textContent = v.value;
+        if (k == "timeline") {
+            minYear = Math.min(...v.value)
+            maxYear = Math.max(...v.value)
+
+            if (minYear == Infinity || maxYear == -Infinity) continue;
+
+            textContent = `${minYear} - ${maxYear}`;
+        }
+        if (k == "searchbar" && v.value.length == 0) continue;
+
+        spanTag = document.createElement('div');
+        spanTag.textContent = textContent;
+        const closeIcon = document.createElement('i');
+        closeIcon.classList.add('fas', 'fa-times');
+        spanTag.appendChild(closeIcon);
+        spanTag.classList.add('tag', 'is-primary', 'searchTag');
+        $("#searchTags").append(spanTag);
+
+        closeIcon.onclick = function() {
+            removeSearchSection(k);
+        }
+        
+    }
+
 }
 
 function removeSearchSection(section) {

@@ -4,7 +4,7 @@ const clusterCenterHTML = `
 `
 
 
-function renderClusters(numClusters, summaries=null) {
+function renderClusters(numClusters) {
 
     clusterLinks = [];
     clusterNodes = [];
@@ -63,15 +63,10 @@ function renderClusters(numClusters, summaries=null) {
           .attr('fill', 'black')
           .attr('class', 'topicLabel')
           .text(d => topics["names"][d.cluster]);
-
               
-    // clusterCenters.append('xhtml:div')
-    //     .attr('class', 'card')
-    //     .style('width', `0`)
-    //     .style('height', `0`)
-    //     .html(clusterCenterHTML);
     }
-    else if (summaries) {
+    
+    else if (clusterSummaries) {
         clusterCenters = clusterNode.append('g')
             .attr('class', 'clusterSummary');
 
@@ -92,23 +87,8 @@ function renderClusters(numClusters, summaries=null) {
             const selectedCluster = selectedCircle.select(function() {
                 return this.parentNode;
             });
-            // if (clickedNode === d) {
-            //     // If the same node is clicked again, toggle the tooltip
-            //     selectedCircle.classed('clicked', false);
-            //     nodeGroup = node.filter(data => data.id === d.id);
-            //     nodeGroup.select('.tooltip').remove();
-            //     // Lowering nodes in topic modeling mode breaks the chart
-            //     if (!topicMode) {
-            //         nodeGroup.lower();
-            //         link.lower();
-            //         clusterLink.lower();    
-            //     }
-            //     clickedNode = null; // Reset the clicked node
-            // } else {
-                // selectedCircle.classed('clicked', true);
-                // clickedNode = d; // Store the clicked node
-                createSummaryTooltip(selectedCluster, summaries[d["cluster"]], event); // Pass the node selection, data, and event
-            // }
+
+            createSummaryTooltip(selectedCluster, clusterSummaries[d["cluster"]], event); // Pass the node selection, data, and event
         });
         
 

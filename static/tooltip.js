@@ -142,12 +142,9 @@ function createSummaryTooltip(selectedCircle, summary, event) {
         .style('width', `${tooltipWidth}px`);
         // .style('height', '500px');
 
-    // entityTags = "";
-    // mostCommonEntities = mostFrequent(d.entities);
-    // mostCommonEntities.forEach(entity => entityTags = entityTags.concat(`<span class="entitytag tag is-primary">${entity}</span>`));
     div.html(`
         <header class="card-header tooltip-header">
-            <p class="card-header-title">d.label</p>
+            <p class="card-header-title">Cluster Summary</p>
             <button class="card-header-icon" aria-label="more options">
                 <span class="icon">
                     <i class="fa-solid fa-close tooltip-close"></i>
@@ -161,9 +158,9 @@ function createSummaryTooltip(selectedCircle, summary, event) {
 
     $(".tooltip-close").click(function(event) { 
         // TODO: very hacky
-        parentG = d3.select(event.target).node().parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode;
-        selectedCircle = parentG.childNodes[0];
-        selectedCircle.classList.remove('clicked');
+        // parentG = d3.select(event.target).node().parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode;
+        // selectedCircle = parentG.childNodes[0];
+        // selectedCircle.classList.remove('clicked');
         nodeGroup.select('.tooltip').remove();
         if (!topicMode)
             nodeGroup.lower();

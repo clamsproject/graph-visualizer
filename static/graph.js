@@ -284,15 +284,20 @@ function updateGraph(manualLinks=null) {
     svg.selectAll("foreignObject").remove();
     svg.selectAll("text").remove();
     frozen = false;
+    console.log("Setting links...")
     setLinks(manualLinks);
     // setLinkOverlays();
+    console.log("Setting nodes...")
     setNodes();
 
+    console.log("Setting simulation...")
     setSimulation();
 
     setNodeColors(clusterColorCheckbox.checked);
 
+    console.log("Rendering clusters...")
     renderClusters(numClusters);
+    console.log("Done.")
 }
 
 function addNode(new_node) {

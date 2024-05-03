@@ -26,7 +26,10 @@ function updatePieChart() {
     labelCounts = getAppLabels();
 
     if (Object.keys(labelCounts).length == 0) {
-      ctx.canvas.height = 0;
+      ctx.font = "40px Arial";
+      ctx.fillStyle = "gray";
+      ctx.textAlign = "center";
+      ctx.fillText('No apps found.', ctx.canvas.width/2, ctx.canvas.height/2);
       return;
     }
 
