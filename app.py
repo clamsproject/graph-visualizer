@@ -64,7 +64,7 @@ def upload():
         entities = get_entities(transcript)
         # Store entities as list in descending order of frequency
         c = Counter(entities)
-        entities.sort(key=lambda x: (c[x], x), reverse=True)
+        entities = [entity for entity, _ in c.most_common(500)]
         date = extract_date(filename, mmif)
         thumnail_path = get_thumbnail(mmif)
         apps = [str(view.metadata.app) for view in mmif.views]

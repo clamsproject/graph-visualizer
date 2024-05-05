@@ -46,7 +46,7 @@ function setLinks(manualLinks = null) {
     if (!manualLinks) {
         for (let i = 0; i < nodes.length; i++) {
             for (let j = i + 1; j < nodes.length; j++) {
-                const sharedEntities = nodes[i].entities.filter(entity => nodes[j].entities.includes(entity));
+                const sharedEntities = nodes[i].entities.slice(0,100).filter(entity => nodes[j].entities.includes(entity));
                 weight = ((sharedEntities.length*2)/(nodes[i].entities.length + nodes[j].entities.length))
                 if (weight*100 >= entitySlider.value && nodes[i].hidden == false && nodes[j].hidden == false) {
                     links.push({ source: nodes[i].id, 

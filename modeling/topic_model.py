@@ -109,21 +109,22 @@ def train_topic_model(zeroshot_topics = []):
     sentence_model = SentenceTransformer("all-MiniLM-L6-v2")
     # embeddings = sentence_model.encode(docs, show_progress_bar=False)
     vectorizer_model = CountVectorizer(stop_words="english")
-    # ctfidf_model = ClassTfidfTransformer(reduce_frequent_words=True)
+    ctfidf_model = ClassTfidfTransformer(reduce_frequent_words=True)
     # representation_model = MaximalMarginalRelevance(diversity=0.005)
 
 
     topic_model = BERTopic(
         vectorizer_model=vectorizer_model,
         # seed_topic_list=seed_topic_list
-        min_topic_size=50,
+        min_topic_size=20,
         
-        # ctfidf_model=ctfidf_model,
+        ctfidf_model=ctfidf_model,
         zeroshot_topic_list=zeroshot_topics if zeroshot_topics else None,
         zeroshot_min_similarity=.5 if zeroshot_topics else None,
         calculate_probabilities=True,
         # representation_model=representation_model,
         embedding_model=sentence_model,
+        # vectorizer_model=vectorizer_model,
         # representation_model=KeyBERTInspired(),
         # low_memory=True
     )

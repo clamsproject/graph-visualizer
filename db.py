@@ -24,3 +24,14 @@ def get_all_data(table_name):
 def delete_data(table_name, id):
     c.execute(f"DELETE FROM {table_name} WHERE id=?", (id,))
     conn.commit()
+
+if __name__ == "__main__":
+    from modeling.ner import get_entities
+    nodes = get_all_data("nodes")
+    long_summaries = [node[4] for node in nodes]
+    entities = [get_entities(long_summary)[1] for long_summary in long_summaries]
+    delete_table("nodes")
+    for i in range(len(nodes)):
+        node = list(nodes[i])
+        node[6] = entities[i]
+        insert_data("nodes", node)

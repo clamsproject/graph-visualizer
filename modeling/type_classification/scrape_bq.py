@@ -22,6 +22,7 @@ def get_main_article_text(row):
     return article_text
 
 def process_row(row):
+    print("processing row!")
     article_text = get_main_article_text(row)
     if article_text:
         return {"index": row.name, "ARTICLETEXT": article_text}
@@ -31,7 +32,7 @@ def process_row(row):
 def scrape_in_parallel(df):
     with ThreadPoolExecutor(max_workers=4) as executor:
         futures = [executor.submit(process_row, row) for _, row in df.iterrows()]
-        results = [future.result() for future in tqdm(futures)]
+        results = [future.result() for future in futures]
     return pd.DataFrame(results)
 
 dataset_path = "bq-results.csv"

@@ -59,8 +59,11 @@ body, html {
   position: absolute;
   top: 20px;
   right: 10px;
+  /* height: 90%; */
+  max-height: 95%;
   z-index: 1;
   width: 30%;
+  overflow-y: scroll;
   /* background-color: white;
   border-radius: 10px;
   filter: drop-shadow(0 0 0.75rem lightgray); */
