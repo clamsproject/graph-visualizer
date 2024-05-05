@@ -13,15 +13,19 @@ def get_vid_path(mmif):
 
 
 def get_thumbnail(mmif):
-    vid_path = get_vid_path(mmif)
-    cap = cv2.VideoCapture(vid_path)
-    total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
-    candidate_frames = random.randrange(0, total_frames, 1)
+    try:
+        vid_path = get_vid_path(mmif)
+        cap = cv2.VideoCapture(vid_path)
+        total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+        candidate_frames = random.randrange(0, total_frames, 1)
 
-    cap.set(cv2.CAP_PROP_POS_FRAMES, candidate_frames)
-    success, image = cap.read()
-    if success:
-        cv2.imwrite("random_frame.jpg", image)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, candidate_frames)
+        success, image = cap.read()
+        if success:
+            cv2.imwrite("random_frame.jpg", image)
+    except Exception as e:
+        print(e)
+        return None
 
     
 

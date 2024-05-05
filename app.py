@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request
-from flask_cors import CORS, cross_origin
 import os
 import json
 import ast
@@ -19,7 +18,6 @@ from db import insert_data, get_all_data, delete_data
 # TODO: maybe automatically change document base? or at least make it easy to change
 
 app = Flask(__name__, static_url_path='/static')
-CORS(app, support_credentials=True)
 
 # Get the absolute path to the static folder
 static_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
@@ -64,6 +62,9 @@ def upload():
         mmif = Mmif(file.read())
         summary, long_summary, transcript = summarize_file(mmif)
         entities = get_entities(transcript)
+        # Store entities as list in descending order of frequency
+        c = Counter(entities)
+        entities.sort(key=lambda x: (c[x], x), reverse=True)
         date = extract_date(filename, mmif)
         thumnail_path = get_thumbnail(mmif)
         apps = [str(view.metadata.app) for view in mmif.views]

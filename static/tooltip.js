@@ -1,10 +1,15 @@
-// Function for getting the most frequent elements of an array
-const mostFrequent = arr =>
-    arr.sort((a, b) =>
-          arr.filter(v => v === a).length
-        - arr.filter(v => v === b).length
-    ).slice(0,10);
-
+function mostCommon(arr, n) {
+    nMostCommon = []
+    for (var i = 0; i < arr.length; i++) {
+        if (!nMostCommon.includes(arr[i])) {
+            nMostCommon.push(arr[i]);
+        }
+        if (nMostCommon.length >= n) {
+            return nMostCommon;
+        }
+    }
+    return nMostCommon;
+}
 
 // TODO: Highlight shared entities
 function createTooltip(nodeSelection, d, event) {
@@ -40,7 +45,8 @@ function createTooltip(nodeSelection, d, event) {
         // .style('height', '500px');
 
     entityTags = "";
-    mostCommonEntities = mostFrequent(d.entities);
+    // First 10 entities in list are most common entities
+    mostCommonEntities = mostCommon(d.entities, 10)
     mostCommonEntities.forEach(entity => entityTags = entityTags.concat(`<span class="entitytag tag is-primary">${entity}</span>`));
     div.html(`
         <header class="card-header tooltip-header">

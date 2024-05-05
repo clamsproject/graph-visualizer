@@ -3,3 +3,12 @@ transformers==4.40.0
 torch==2.2.2
 numba==0.56
 summarizer==0.0.7
+clams-python==1.2.1
+pandas==2.2.2
+scikit-learn==1.4.2
+spacy>=3.0.0,<4.0.0
+en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
+sentence_transformers==2.7.0
+bertopic==0.16.1
+tqdm==4.66.4
+opencv-python==4.9.0.80

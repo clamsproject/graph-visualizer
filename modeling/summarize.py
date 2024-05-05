@@ -13,13 +13,16 @@ from nltk.tokenize import sent_tokenize
 import numpy as np
 import networkx as nx
 from summarizer import Summarizer
+from torch.utils.data import Dataset
 
 tqdm.pandas()
 
 # TEST_DOCUMENT = "../mmif_files/whisper3.mmif"
 MAX_LEN = 1024
-# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-device = torch.device("cpu")
+# Summarizer needs at least 4GB of VRAM
+device = torch.device("cuda:0" if torch.cuda.is_available() and torch.cuda.mem_get_info()[1] > 4000000000 
+                               else "cpu")
+# device = torch.device("cpu")
 print(f"Using {device}")
 summarizer = pipeline(
     "summarization", model="facebook/bart-large-cnn", device=device)
