@@ -27,7 +27,7 @@ glideHero.mount();
 const searchField = document.getElementById('searchfield');
 searchField.addEventListener('keydown', function (event) {
     if (event.key === "Enter") {
-        searchFilter({ field: "all", value: searchField.value }, section = "searchbar");
+        searchFilter({ field: "all", value: searchField.value }, section = `searchbar-${searchField.value}`);
     }
 });
 

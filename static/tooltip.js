@@ -58,15 +58,22 @@ function createTooltip(nodeSelection, d, event) {
             </button>
         </header>
         <div class="card-content card-summary">
-            <p>${d.summary}</p>
+            <p class="short-summary">${d.summary}</p>
+            <p class="long-summary" style="display: none;">${d.long_summary}</p>
             ${entityTags}
-            <img src="https://dummyimage.com/300">
         </div>
         <footer class="card-footer">
             <a href="#" class="card-footer-item">Visualize</a>
             <a href="#" class="card-footer-item" style="color: #ff6384" onclick="deleteNode('${d.id}')">Delete</a>
         </footer>              
     `);
+
+    $(".card-summary").click(function() {
+        $(this).find('.long-summary').toggle();
+        $(this).find('.short-summary').toggle();
+
+        setTooltipHeight();
+    })
 
     $(".tooltip-close").click(function(event) { 
         // TODO: very hacky
@@ -109,10 +116,12 @@ function createTooltip(nodeSelection, d, event) {
     // TODO: This has rendering errors when zoomed out far enough
     // Set element height dynamically
     // Get the current zoom level
-    const currentZoomLevel = d3.zoomTransform(nodeGroup.node()).k;
-    var divHeight = div.node().getBoundingClientRect().height;
-    foreignObject.attr('height', (divHeight/currentZoomLevel) + 20);
-    
+    function setTooltipHeight() {
+        const currentZoomLevel = d3.zoomTransform(nodeGroup.node()).k;
+        var divHeight = div.node().getBoundingClientRect().height;
+        foreignObject.attr('height', (divHeight/currentZoomLevel) + 20);    
+    }
+    setTooltipHeight();
 }
 
 function createSummaryTooltip(selectedCircle, summary, event) {

@@ -29,6 +29,7 @@ function cluster() {
             hideProgressBar();
             nodes = data;
             clusterColors = getRandomColors(numClusters);
+            // clusterColors = ['#E3170A', '#A9E5BB', '#B38CB4', '#F7B32B']
             updateGraph();
         })
 }

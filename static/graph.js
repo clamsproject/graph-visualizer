@@ -65,7 +65,7 @@ function setLinks(manualLinks = null) {
         .append('line')
         .attr('class', 'link')
         .attr('stroke-width', d => (d.weight * (nodeRadius/2)) || 1) // Max stroke width should be node radius
-        .attr('stroke', d => colorScale(d.weight*2)); // Set stroke color based on weight
+        .attr('stroke', d => colorScale(d.weight*1)); // Set stroke color based on weight
 }
 
 setLinks();

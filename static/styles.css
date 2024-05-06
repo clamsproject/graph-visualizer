@@ -69,6 +69,18 @@ body, html {
   filter: drop-shadow(0 0 0.75rem lightgray); */
 }
 
+.card-summary {
+  cursor: pointer !important;
+}
+
+.short-summary {
+  cursor: pointer !important;
+}
+
+.long-summary {
+  cursor: pointer !important;
+}
+
 .mmifPanel {
   justify-content: center;
   align-items: center;

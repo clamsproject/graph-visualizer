@@ -135,6 +135,11 @@ if __name__ == "__main__":
     # best_model, data = grid_search_topic_model()
     # print(best_model.get_topic_info()["Name"])
 
-    topic_model, data = train_topic_model()
+    data = pd.read_csv(os.path.join(os.path.dirname(__file__), "../data/transcripts.csv"))
+    data = data.dropna()
+
+    # topic_model, data = train_topic_model()
     coherence = get_coherence(topic_model, data['transcript'][:1000] if len(data) > 1000 else data['transcript'])
+    print(topic_model.get_topic_info()["Name"])
+
     print(f"Topic Model Coherence: {coherence}")

@@ -60,8 +60,15 @@ def upload():
         file = request.files['file']
         filename = file.filename.replace(".mmif", "").replace(".json", "")
         mmif = Mmif(file.read())
+
+        # Save the MMIF file to tmp
+        # tmp_filename = os.path.join('tmp', file.filename)
+        # with open(tmp_filename, 'wb') as tmp_file:
+        #     tmp_file.write(file.read())
+        
         summary, long_summary, transcript = summarize_file(mmif)
         entities = get_entities(transcript)
+
         # Store entities as list in descending order of frequency
         c = Counter(entities)
         entities = [entity for entity, _ in c.most_common(500)]
@@ -69,6 +76,7 @@ def upload():
         thumnail_path = get_thumbnail(mmif)
         apps = [str(view.metadata.app) for view in mmif.views]
         new_node = { 'id': filename, 
+                    #  'filename': file.filename,
                      'label': filename, 
                      'apps': ",".join(apps), 
                      'summary': summary, 
