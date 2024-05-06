@@ -1,3 +1,90 @@
+let numClusters = 4;
+let clusterSummaries = null;
+
+$(".clusterButton").click(function () {
+    if ($(this).hasClass("unclustered")) {
+        $(this).removeClass("unclustered");
+        $(this).addClass("clustered");
+        $(this).text("Uncluster");
+        $("#clusterExplanationButton").removeClass("inactive");
+        cluster();
+    } else {
+        $(this).removeClass("clustered");
+        $(this).addClass("unclustered");
+        $(this).text("Cluster");
+        if (!$("#clusterExplanationButton").hasClass("inactive"))
+            $("#clusterExplanationButton").addClass("inactive");
+        uncluster();
+    }
+});
+
+function cluster() {
+    $(".clusterButton").addClass("is-loading");
+    $(".topicModelButton").addClass("is-static");
+    fetch("/cluster")
+        .then(response => response.json())
+        .then(data => {
+            $(".clusterButton").removeClass("is-loading");
+            $("#clusterColorBox").removeAttr("disabled");
+            hideProgressBar();
+            nodes = data;
+            clusterColors = getRandomColors(numClusters);
+            updateGraph();
+        })
+}
+
+function uncluster() {
+    $("#clusterColorBox").attr("disabled", true);
+    $(".topicModelButton").removeClass("is-static");
+    svg.selectAll(".topicLabel").remove();
+
+    nodes.forEach(node => {
+        node.cluster = null;
+    });
+    clusterSummaries = null;
+    updateGraph();
+    tick();
+}
+
+function argMax(arr) {
+    return arr.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1];
+}
+
+let clusterColors = [];
+let topics;
+
+function showClusterExplanations() {
+    // showProgressBar();
+    $("#clusterExplanationButton").addClass("is-loading")
+    nodeCopy = [ ...nodes ];
+    nodeCopy = nodeCopy.map(d => {
+        return {
+                id: d.id,
+                summary: d.summary,
+                cluster: d.cluster
+               }
+    })
+    fetch("/summarize_clusters", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({nodes: nodeCopy})
+    })
+    .then(response => response.json())
+    .then(data => {
+        // showClusterExplanationsModal(data);
+        clusterSummaries = data;
+        updateGraph();
+        // hideProgressBar();
+        if (!$("#clusterExplanationButton").hasClass("inactive"))
+            $("#clusterExplanationButton").addClass("inactive");
+        if ($("#returnButton").hasClass("is-loading"))
+            $("#returnButton").removeClass("is-loading");
+    })
+}
+
+
 
 const clusterCenterHTML = `
     <div class="cluster-center">Cluster center</div>

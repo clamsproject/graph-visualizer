@@ -2,7 +2,59 @@ let hoveredCLAMSApp = null;
 let clickedCLAMSApps = [];
 var ctx = document.getElementById('pieChart').getContext('2d');
 
-// TODO Update labels dynamically
+// PANEL open/close
+$(document).ready(function () {
+  $('#mmifPanel').data('panel-state', 'closed');
+  var panelContent = $('#mmifPanel').find(".panel-content");
+  panelContent.slideToggle("fast");
+
+  $("#statsPanel").resizable({ handles: "w", minWidth: 300 });
+  $(".dz-hidden-input").prop("disabled", true);
+});
+
+
+// CAROUSEL
+var glideHero = new Glide('.glide', {
+  type: 'slider',
+  animationDuration: 1000,
+  autoplay: false,
+  dragThreshold: false
+});
+
+glideHero.mount();
+
+// SEARCH BAR
+const searchField = document.getElementById('searchfield');
+searchField.addEventListener('keydown', function (event) {
+    if (event.key === "Enter") {
+        searchFilter({ field: "all", value: searchField.value }, section = "searchbar");
+    }
+});
+
+// SLIDER
+const entitySlider = document.getElementById('sliderWithValue');
+const output = document.querySelector('output[for="sliderWithValue"]');
+
+nodesPromise.then(() => {
+    output.textContent = entitySlider.value;
+
+    entitySlider.addEventListener('mouseup', () => {
+        updateGraph();
+    });
+
+    entitySlider.addEventListener('mousemove', () => {
+        output.textContent = entitySlider.value;
+        const entityNumber = entitySlider.value == 1 ? "entity" : "entities";
+        valueSpan = `<span style="color: #FF4A1C !important;">${entitySlider.value}%</span>`;
+        $("#sliderText").html(`Draw links when nodes share ${valueSpan} of entities`);
+    });
+
+    const entityNumber = entitySlider.value == 1 ? "entity" : "entities";
+    valueSpan = `<span style="color: #FF4A1C !important;">${entitySlider.value}%</span>`;
+    $("#sliderText").html(`Draw links when nodes share ${valueSpan} of entities`);
+    bulmaSlider.attach();
+});
+
 
 function getAppLabels() {
   var labels = {};

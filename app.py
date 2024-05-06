@@ -95,7 +95,7 @@ def cluster():
 @app.route('/topic_model', methods=['GET'])
 def topic_model():
     nodes = get_all_nodes()
-    docs = [node['transcript'] for node in nodes]
+    docs = [node['long_summary'] for node in nodes]
     topic_names, topic_distr = get_topics(docs)
     res = {}
     res["names"] = topic_names

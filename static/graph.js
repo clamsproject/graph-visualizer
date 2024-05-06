@@ -46,7 +46,7 @@ function setLinks(manualLinks = null) {
     if (!manualLinks) {
         for (let i = 0; i < nodes.length; i++) {
             for (let j = i + 1; j < nodes.length; j++) {
-                const sharedEntities = nodes[i].entities.slice(0,100).filter(entity => nodes[j].entities.includes(entity));
+                const sharedEntities = nodes[i].entities.slice(0,300).filter(entity => nodes[j].entities.includes(entity));
                 weight = ((sharedEntities.length*2)/(nodes[i].entities.length + nodes[j].entities.length))
                 if (weight*100 >= entitySlider.value && nodes[i].hidden == false && nodes[j].hidden == false) {
                     links.push({ source: nodes[i].id, 
@@ -65,7 +65,7 @@ function setLinks(manualLinks = null) {
         .append('line')
         .attr('class', 'link')
         .attr('stroke-width', d => (d.weight * (nodeRadius/2)) || 1) // Max stroke width should be node radius
-        .attr('stroke', d => colorScale(d.weight)); // Set stroke color based on weight
+        .attr('stroke', d => colorScale(d.weight*2)); // Set stroke color based on weight
 }
 
 setLinks();

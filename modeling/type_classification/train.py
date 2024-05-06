@@ -14,6 +14,8 @@ from sklearn.model_selection import train_test_split
 from transformers import DistilBertForSequenceClassification
 from transformers import TrainingArguments
 from transformers import Trainer
+from transformers import AutoTokenizer
+from transformers import AutoModelForSequenceClassification, AutoModel
 
 # Setting up the device for GPU usage
 from torch import cuda
@@ -42,15 +44,21 @@ class GDELTDataset(Dataset):
 
 def train_bert(df, n_labels, device):
 
-    tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
-    model = DistilBertForSequenceClassification.from_pretrained("distilbert-base-cased")
+    tokenizer = AutoTokenizer.from_pretrained('google-bert/bert-base-uncased')
+    model = AutoModelForSequenceClassification.from_pretrained("google-bert/bert-base-uncased")
     model.to(device)
 
-    max_len = 512
+    max_len = 26
     dataset = GDELTDataset(df, max_len, tokenizer)
     train, val = train_test_split(dataset, test_size=0.1)
     train_dataloader = DataLoader(dataset, batch_size=4, shuffle=True)
     val_dataloader = DataLoader(val, batch_size=4, shuffle=True)
+
+    input_ids = torch.stack([d['input_ids'] for d in train], dim=0).to(device)
+    print(input_ids.shape)
+    # attention_mask = torch.tensor([d['attention_mask'] for d in train]).to(device)
+
+    # pred1 = model(input_ids, output_hidden_states=True)
 
     training_args = TrainingArguments(
         output_dir='./results',

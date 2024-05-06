@@ -10,7 +10,77 @@
 //     zoomBehavior.scaleBy(svg.transition().duration(750), desiredZoomLevel);  
 //   }
   
-  
+$(".topicModelButton").click(function () {
+    if ($(this).hasClass("untopicmodeled")) {
+        topicModel();
+        $(this).removeClass("untopicmodeled");
+        $(this).addClass("topicmodeled");
+        $(this).text("Remove Topic Modeling");
+    } else {
+        unTopicModel();
+        $(this).removeClass("topicmodeled");
+        $(this).addClass("untopicmodeled");
+        $(this).text("Topic Model");
+    }
+});
+
+function topicModel() {
+    $(".topicModelButton").addClass("is-loading");
+    $(".clusterButton").addClass("is-static");
+    fetch("/topic_model")
+        .then(response => response.json())
+        .then(data => {
+            $(".topicModelButton").removeClass("is-loading");
+            setTopicData(data);
+        })
+}
+
+function setTopicData(data) {
+    uncluster();
+    clusters = []
+            probs = data["probs"];
+            for (const [key, value] of Object.entries(probs)) {
+                matchingNode = nodes.find(node => node.id == key);
+                nodeProbs = value;
+                topicNum = argMax(nodeProbs);
+                if (!clusters.includes(topicNum)) {
+                    matchingNode.cluster = clusters.length;
+                    clusters.push(topicNum);
+                }
+                else {
+                    matchingNode.cluster = clusters.indexOf(topicNum);
+                }
+            }
+
+            topics = data;
+
+            numClusters = clusters.length;
+            clusterColors = getRandomColors(numClusters);
+            updateGraph();
+
+            $("#topicChartButton").removeClass("inactive");
+            $("#clusterColorBox").removeAttr("disabled");
+}
+
+function unTopicModel() {
+    $("#clusterColorBox").attr("disabled", true);
+    $("#topicChartButton").addClass("inactive");
+    $(".clusterButton").removeClass("is-static");
+    if (!$("#returnButton").hasClass("inactive")) {
+        $("#returnButton").addClass("inactive");
+    }
+    if ($("#sliderWithValue").attr("disabled")) {
+        $("#sliderWithValue").removeAttr("disabled");
+    }
+    topics = null;
+    uncluster();
+}
+
+function showTopicChart() {
+    showTopicModel(topics);
+    $(this).addClass("inactive");
+}
+
 
 function showTopicModel(data) {
     // $("#filterHeader").click();

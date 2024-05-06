@@ -97,7 +97,7 @@
                 <div class="panel-block">
                     <div id="sliderWrapper">
                         <h4 class="title is-5" id="sliderText"></h4>
-                        <input id="sliderWithValue" class="slider has-output" min="10" max="100" value="25" step="5"
+                        <input id="sliderWithValue" class="slider has-output" min="10" max="100" value="45" step="5"
                             type="range">
                         <output for="sliderWithValue"></output>
                     </div>
@@ -176,29 +176,8 @@
 
     <div id="progressBarWrapper"></div>
     </div>
-
-    <!-- Carousel script -->
-    <script>
-        var glideHero = new Glide('.glide', {
-            type: 'slider',
-            animationDuration: 1000,
-            autoplay: false,
-            dragThreshold: false
-        });
-
-        glideHero.mount();
-
-    </script>
-
-    <!-- Search script -->
-    <script>
-        const searchField = document.getElementById('searchfield');
-        searchField.addEventListener('keydown', function (event) {
-            if (event.key === "Enter") {
-                searchFilter({ field: "all", value: searchField.value }, section = "searchbar");
-            }
-        });
-    </script>
+    
+    <!-- Very general scripts and helper functions -->
 
     <!-- Progress bar script -->
     <script>
@@ -210,166 +189,6 @@
 
         function hideProgressBar() {
             $("#progressBarWrapper").html("");
-        }
-    </script>
-
-    <!-- Cluster / topic modeling script -->
-    <script>
-        let numClusters = 4;
-        let clusterSummaries = null;
-
-        $(".clusterButton").click(function () {
-            if ($(this).hasClass("unclustered")) {
-                $(this).removeClass("unclustered");
-                $(this).addClass("clustered");
-                $(this).text("Uncluster");
-                $("#clusterExplanationButton").removeClass("inactive");
-                cluster();
-            } else {
-                $(this).removeClass("clustered");
-                $(this).addClass("unclustered");
-                $(this).text("Cluster");
-                if (!$("#clusterExplanationButton").hasClass("inactive"))
-                    $("#clusterExplanationButton").addClass("inactive");
-                uncluster();
-            }
-        });
-
-        function cluster() {
-            $(".clusterButton").addClass("is-loading");
-            $(".topicModelButton").addClass("is-static");
-            fetch("/cluster")
-                .then(response => response.json())
-                .then(data => {
-                    $(".clusterButton").removeClass("is-loading");
-                    $("#clusterColorBox").removeAttr("disabled");
-                    hideProgressBar();
-                    nodes = data;
-                    clusterColors = getRandomColors(numClusters);
-                    updateGraph();
-                })
-        }
-
-        function uncluster() {
-            $("#clusterColorBox").attr("disabled", true);
-            $(".topicModelButton").removeClass("is-static");
-            svg.selectAll(".topicLabel").remove();
-
-            nodes.forEach(node => {
-                node.cluster = null;
-            });
-            clusterSummaries = null;
-            updateGraph();
-            tick();
-        }
-
-        function argMax(array) {
-            return array.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1];
-        }
-
-        let clusterColors = [];
-        let topics;
-
-        $(".topicModelButton").click(function () {
-            if ($(this).hasClass("untopicmodeled")) {
-                topicModel();
-                $(this).removeClass("untopicmodeled");
-                $(this).addClass("topicmodeled");
-                $(this).text("Remove Topic Modeling");
-            } else {
-                unTopicModel();
-                $(this).removeClass("topicmodeled");
-                $(this).addClass("untopicmodeled");
-                $(this).text("Topic Model");
-            }
-        });
-
-        function topicModel() {
-            $(".topicModelButton").addClass("is-loading");
-            $(".clusterButton").addClass("is-static");
-            fetch("/topic_model")
-                .then(response => response.json())
-                .then(data => {
-                    $(".topicModelButton").removeClass("is-loading");
-                    setTopicData(data);
-                })
-        }
-
-        function setTopicData(data) {
-            uncluster();
-            clusters = []
-                    probs = data["probs"];
-                    for (const [key, value] of Object.entries(probs)) {
-                        matchingNode = nodes.find(node => node.id == key);
-                        nodeProbs = value;
-                        topicNum = argMax(nodeProbs);
-                        if (!clusters.includes(topicNum)) {
-                            matchingNode.cluster = clusters.length;
-                            clusters.push(topicNum);
-                        }
-                        else {
-                            matchingNode.cluster = clusters.indexOf(topicNum);
-                        }
-                    }
-
-                    topics = data;
-
-                    numClusters = clusters.length;
-                    clusterColors = getRandomColors(numClusters);
-                    updateGraph();
-
-                    $("#topicChartButton").removeClass("inactive");
-                    $("#clusterColorBox").removeAttr("disabled");
-        }
-
-        function unTopicModel() {
-            $("#clusterColorBox").attr("disabled", true);
-            $("#topicChartButton").addClass("inactive");
-            $(".clusterButton").removeClass("is-static");
-            if (!$("#returnButton").hasClass("inactive")) {
-                $("#returnButton").addClass("inactive");
-            }
-            if ($("#sliderWithValue").attr("disabled")) {
-                $("#sliderWithValue").removeAttr("disabled");
-            }
-            topics = null;
-            uncluster();
-        }
-
-        function showTopicChart() {
-            showTopicModel(topics);
-            $(this).addClass("inactive");
-        }
-
-        function showClusterExplanations() {
-            // showProgressBar();
-            $("#clusterExplanationButton").addClass("is-loading")
-            nodeCopy = [ ...nodes ];
-            nodeCopy = nodeCopy.map(d => {
-                return {
-                        id: d.id,
-                        summary: d.summary,
-                        cluster: d.cluster
-                       }
-            })
-            fetch("/summarize_clusters", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({nodes: nodeCopy})
-            })
-            .then(response => response.json())
-            .then(data => {
-                // showClusterExplanationsModal(data);
-                clusterSummaries = data;
-                updateGraph();
-                // hideProgressBar();
-                if (!$("#clusterExplanationButton").hasClass("inactive"))
-                    $("#clusterExplanationButton").addClass("inactive");
-                if ($("#returnButton").hasClass("is-loading"))
-                    $("#returnButton").removeClass("is-loading");
-            })
         }
     </script>
 
@@ -387,18 +206,6 @@
             setNodeColors(clusterColorCheckbox.checked);
         });
 
-    </script>
-
-    <!-- Panel script -->
-    <script>
-        $(document).ready(function () {
-            $('#mmifPanel').data('panel-state', 'closed');
-            var panelContent = $('#mmifPanel').find(".panel-content");
-            panelContent.slideToggle("fast");
-
-            $("#statsPanel").resizable({ handles: "w", minWidth: 300 });
-            $(".dz-hidden-input").prop("disabled", true);
-        });
     </script>
 
     <!-- Dropzone script -->
@@ -438,35 +245,6 @@
     <script src="{{ url_for('static', filename='cluster.js') }}"></script>
     <script src="{{ url_for('static', filename='cloud.js') }}"></script>
     <script src="{{ url_for('static', filename='timeline.js') }}"></script>
-
-    
-    <!-- Slider script -->
-    <script>
-        // (needs to come after graph.js to access nodes)
-        const entitySlider = document.getElementById('sliderWithValue');
-        const output = document.querySelector('output[for="sliderWithValue"]');
-
-        nodesPromise.then(() => {
-            output.textContent = entitySlider.value;
-
-            entitySlider.addEventListener('mouseup', () => {
-                updateGraph();
-            });
-
-            entitySlider.addEventListener('mousemove', () => {
-                output.textContent = entitySlider.value;
-                const entityNumber = entitySlider.value == 1 ? "entity" : "entities";
-                valueSpan = `<span style="color: #FF4A1C !important;">${entitySlider.value}%</span>`;
-                $("#sliderText").html(`Draw links when nodes share ${valueSpan} of entities`);
-            });
-
-            const entityNumber = entitySlider.value == 1 ? "entity" : "entities";
-            valueSpan = `<span style="color: #FF4A1C !important;">${entitySlider.value}%</span>`;
-            $("#sliderText").html(`Draw links when nodes share ${valueSpan} of entities`);
-            bulmaSlider.attach();
-        });
-</script>
-
 
 </body>
 
