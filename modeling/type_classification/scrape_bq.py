@@ -33,7 +33,7 @@ def scrape_in_parallel(df):
 dataset_path = "bq-results.csv"
 output_path = "bq-results-scraped.csv"
 
-df = pd.read_csv(dataset_path)[:100]
+df = pd.read_csv(dataset_path)
 df["entry"] = df.index
 
 # Parallelize the processing of rows
