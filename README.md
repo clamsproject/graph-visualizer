@@ -57,3 +57,12 @@ This project is heavily centered around client-side Javascript code, with Python
           [A batch uploader accessible at localhost:5555/upload]
     - tmp
       [Directory for storing intermediate MMIF files before they are passed to the visualizer]
+
+
+## Visualizations
+
+Connections between nodes are rendered based on shared entities. Clicking a node will show its summary and top entity list, and clicking its summary text will toggle between full and truncated summaries. The nodes can be clustered via KMeans or Topic modeling. If clustering via KMeans, a long summary can be generated representing the content of the text in the clusters. If clustering via Topic Modeling, approximate distributions can be shown in relation to one another via a chart view. The filter panel also contains app type, word cloud, and timeline filters.
+
+## A note on data
+
+Because this application's domain is most likely restricted to news videos, its topic models were trained on ~2000 instances of NewsHour transcripts. Because the copyright on these items is dubious at best, I have not included them in the data directory. If you will only be using the pre-trained topic model, this isn't a problem, but if you want to **train** a topic model to fit your data, the BERTopic training script will throw an error (the only natural place in the app where this would come up is in adding custom zero-shot topics). Because BERTopic is an unsupervised algorithm, you can replace the NewsHour data with *any* custom data, as long the file is named `transcripts.csv` and the text you want to train the topic model on is under the column `transcript`.

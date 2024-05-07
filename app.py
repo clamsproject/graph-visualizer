@@ -10,7 +10,6 @@ from modeling.ner import get_entities
 from modeling.cluster import cluster_nodes
 from modeling.topic_model import get_topics, train_topic_model
 from modeling.date import extract_date
-from modeling.thumbnails import get_thumbnail
 
 from db import insert_data, get_all_data, delete_data
 import requests

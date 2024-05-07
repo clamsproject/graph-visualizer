@@ -30,7 +30,7 @@ function topicModel() {
     fetch("/topic_model", {
         method: "POST",
         headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json"
         },
         body: JSON.stringify({nodes: nodes})
     

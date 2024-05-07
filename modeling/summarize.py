@@ -36,8 +36,6 @@ def url2posix(path):
         path = path[7:]
     return path
 
-# TODO: Error handling
-
 def get_transcript(mmif: Mmif):
     for document in mmif.documents:
         if document.at_type.shortname == "TextDocument":
