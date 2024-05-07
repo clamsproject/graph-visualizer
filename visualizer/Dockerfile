@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y git
 RUN git clone https://github.com/clamsproject/mmif-visualizer.git .
 
 # Install the requirements
-COPY mmif-visualizer/requirements.txt .
+COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose the port

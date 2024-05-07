@@ -84,8 +84,7 @@ def upload():
         # Store entities as list in descending order of frequency
         c = Counter(entities)
         entities = [entity for entity, _ in c.most_common(500)]
-        date = extract_date(filename, mmif)
-        thumnail_path = get_thumbnail(mmif)
+        date = extract_date(file.filename, mmif)
         apps = [str(view.metadata.app) for view in mmif.views]
         new_node = { 'id': filename, 
                      'filename': file.filename,
