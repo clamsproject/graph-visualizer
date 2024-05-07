@@ -23,7 +23,7 @@ from sentence_transformers import SentenceTransformer
 device = torch.device("cuda:0" if torch.cuda.is_available() and torch.cuda.mem_get_info()[1] > 4000000000 
                                else "cpu")
 
-topic_model = BERTopic.load(os.path.join(os.path.dirname(__file__), "../data/topic_newshour"))
+topic_model = BERTopic.load(os.path.abspath(os.path.join(os.path.dirname(__file__), "../data/topic_newshour")))
 print("Loaded pretrained topic model.")
 
 def get_topics(docs):
@@ -67,7 +67,7 @@ def train_topic_model(zeroshot_topics = []):
     )
 
     tqdm.pandas()
-    data = pd.read_csv(os.path.join(os.path.dirname(__file__), "../data/transcripts.csv"))
+    data = pd.read_csv(os.path.abspath(os.path.join(os.path.dirname(__file__), "../data/transcripts.csv")))
     data = data.dropna()
     print("removing speaker names...")
     data["transcript"] = data["transcript"].progress_apply(remove_speaker_names)
