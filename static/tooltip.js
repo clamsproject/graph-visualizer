@@ -63,7 +63,7 @@ function createTooltip(nodeSelection, d, event) {
             ${entityTags}
         </div>
         <footer class="card-footer">
-            <a href="#" class="card-footer-item">Visualize</a>
+            <a href="#" class="card-footer-item" onclick="visualizeNode('${d.id}')">Visualize</a>
             <a href="#" class="card-footer-item" style="color: #ff6384" onclick="deleteNode('${d.id}')">Delete</a>
         </footer>              
     `);

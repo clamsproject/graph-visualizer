@@ -13,11 +13,13 @@ from modeling.date import extract_date
 from modeling.thumbnails import get_thumbnail
 
 from db import insert_data, get_all_data, delete_data
-
-# TODO: dynamically change node size based on filesize
-# TODO: maybe automatically change document base? or at least make it easy to change
+import requests
+from flask import redirect, url_for
+from flask_cors import CORS
 
 app = Flask(__name__, static_url_path='/static')
+# Enable CORS for all routes
+CORS(app)
 
 # Get the absolute path to the static folder
 static_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
@@ -30,6 +32,7 @@ def index():
 def get_all_nodes():
     nodes = get_all_data("nodes")
     nodes = [(id, 
+              filename,
               label, 
               apps.split(","), 
               summary, 
@@ -38,15 +41,23 @@ def get_all_nodes():
               entities.split(","), 
               date, 
               temp, 
-              hidden) for id, label, apps, summary, long_summary, transcript, entities, date, temp, hidden in nodes]
-    nodes = [dict(zip(["id", "label", "apps", "summary", "long_summary", "transcript", "entities", "date", "temp", "hidden"], node)) for node in nodes]
+              hidden) for id, filename, label, apps, summary, long_summary, transcript, entities, date, temp, hidden in nodes]
+    nodes = [dict(zip(["id", "filename", "label", "apps", "summary", "long_summary", "transcript", "entities", "date", "temp", "hidden"], node)) for node in nodes]
     return nodes 
 
 @app.route('/delete', methods=['POST'])
 def delete():
     try:
         id = request.json['id']
+        nodes = get_all_nodes()
+        node = [node for node in nodes if node['id'] == id][0]
+        filename = node['filename']
         delete_data("nodes", id)
+
+        # Delete the MMIF file from tmp
+        tmp_filename = os.path.join('tmp', filename)
+        os.remove(tmp_filename)
+
         return json.dumps({"success": True})
     except Exception as e:
         return json.dumps({"error": e})
@@ -59,12 +70,13 @@ def upload():
     try:
         file = request.files['file']
         filename = file.filename.replace(".mmif", "").replace(".json", "")
-        mmif = Mmif(file.read())
+        file_content = file.read()
+        mmif = Mmif(file_content)
 
         # Save the MMIF file to tmp
-        # tmp_filename = os.path.join('tmp', file.filename)
-        # with open(tmp_filename, 'wb') as tmp_file:
-        #     tmp_file.write(file.read())
+        tmp_filename = os.path.join('tmp', file.filename)
+        with open(tmp_filename, 'wb') as tmp_file:
+            tmp_file.write(file_content)
         
         summary, long_summary, transcript = summarize_file(mmif)
         entities = get_entities(transcript)
@@ -76,7 +88,7 @@ def upload():
         thumnail_path = get_thumbnail(mmif)
         apps = [str(view.metadata.app) for view in mmif.views]
         new_node = { 'id': filename, 
-                    #  'filename': file.filename,
+                     'filename': file.filename,
                      'label': filename, 
                      'apps': ",".join(apps), 
                      'summary': summary, 
@@ -133,11 +145,26 @@ def summarize_clusters():
     n_clusters = max([node['cluster'] for node in nodes]) + 1
     cluster_texts = [" ".join([node['summary'] for node in nodes if node['cluster'] == i]) for i in range(n_clusters)]
     cluster_summaries = [summarize_from_text(cluster_text)[1] for cluster_text in cluster_texts]
-    # nodes = get_all_nodes()
-    # print(nodes)
     return cluster_summaries
+
+@app.route('/visualize', methods=['POST'])
+def visualize():
+    id = request.json['id']
+    nodes = get_all_nodes()
+    node = [node for node in nodes if node['id'] == id][0]
+    filename = node['filename']
+    
+    # Redirect to the visualization page with the id
+    file_path = os.path.join('tmp', filename)
+    files = {'file': open(file_path, 'rb')}
+    # The visualizer returns the document id if curl is in the headers
+    headers = {'User-Agent': 'basically curl'}
+
+    res = requests.post('http://localhost:5000/upload', files=files, headers=headers)
+    return {"res": res.text}
+    
     
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5555)

@@ -150,6 +150,29 @@ function deleteNode(nodeId) {
         });
 }
 
+function visualizeNode(nodeId) {
+    let mmif_file;
+    fetch('/visualize', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 'id': nodeId }),
+    })
+        .then(response => response.json())
+        .then(data => {
+            data = data["res"];
+            const idPrefix = "Visualization ID is ";
+            const startIndex = data.indexOf(idPrefix) + idPrefix.length;
+            const endIndex = data.indexOf("\n", startIndex);
+            const id = data.slice(startIndex, endIndex);
+            window.open(`http://localhost:5000/display/${id}`, '_blank');
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+}
+
 setNodes();
 
 let simulation;
