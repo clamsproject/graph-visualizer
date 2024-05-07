@@ -27,7 +27,14 @@ $(".topicModelButton").click(function () {
 function topicModel() {
     $(".topicModelButton").addClass("is-loading");
     $(".clusterButton").addClass("is-static");
-    fetch("/topic_model")
+    fetch("/topic_model", {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({nodes: nodes})
+    
+    })
         .then(response => response.json())
         .then(data => {
             $(".topicModelButton").removeClass("is-loading");

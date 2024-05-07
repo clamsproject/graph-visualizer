@@ -91,8 +91,6 @@ function setNodes() {
             .on('drag', dragged)
             .on('end', dragEnded));    
 
-    // clusterColors = ['red', 'green', 'blue', 'orange']
-
     const circles = node.append('circle')
         .attr('class', d => `node ${d.temp ? 'temp loading' : ''}`)
         .attr('r', nodeRadius)
@@ -106,7 +104,6 @@ function setNodes() {
         .text(d => d.label) // Set the text content  
         .style('display', filenameCheckbox.checked ? "block" : "none");  
 
-    // Add click event listener to circles
     circles.on('click', (event, d) => {
         const selectedCircle = d3.select(event.target);
         if (clickedNode === d) {

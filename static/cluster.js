@@ -21,7 +21,13 @@ $(".clusterButton").click(function () {
 function cluster() {
     $(".clusterButton").addClass("is-loading");
     $(".topicModelButton").addClass("is-static");
-    fetch("/cluster")
+    fetch("/cluster", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({nodes: nodes})
+    })
         .then(response => response.json())
         .then(data => {
             $(".clusterButton").removeClass("is-loading");
@@ -131,7 +137,11 @@ function renderClusters(numClusters) {
             .on('end', dragEnded));
 
     if (topics) {
+
+        const occupiedClusters = nodes.map(d => d.hidden ? null : d.cluster);
+
         clusterCenters = clusterNode.append('g');
+
 
         clusterCenters.append('rect')
           .attr('width', d => topics["names"][d.cluster].length * 9 + 20)
@@ -139,6 +149,7 @@ function renderClusters(numClusters) {
           .attr('fill', d => clusterColors[d.cluster])
           .attr('x', d => -((topics["names"][d.cluster].length * 9 + 20) / 2))
           .attr('y', -15)
+          .attr('visibility', d => occupiedClusters.includes(d.cluster) ? 'visible' : 'hidden')
           .attr('class', 'topicLabel');
 
         clusterCenters.append('text')
@@ -150,6 +161,7 @@ function renderClusters(numClusters) {
           .attr('text-anchor', 'middle')
           .attr('fill', 'black')
           .attr('class', 'topicLabel')
+          .attr('visibility', d => occupiedClusters.includes(d.cluster) ? 'visible' : 'hidden')
           .text(d => topics["names"][d.cluster]);
               
     }

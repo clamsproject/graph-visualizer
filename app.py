@@ -106,15 +106,15 @@ def upload():
     except Exception as e:
         return json.dumps({"error": e})
     
-@app.route('/cluster', methods=['GET'])
+@app.route('/cluster', methods=['POST'])
 def cluster():
-    nodes = get_all_nodes()
+    nodes = request.json['nodes']
     clusters = cluster_nodes(nodes, 4)
     return json.dumps(clusters)
 
-@app.route('/topic_model', methods=['GET'])
+@app.route('/topic_model', methods=['POST'])
 def topic_model():
-    nodes = get_all_nodes()
+    nodes = request.json['nodes']
     docs = [node['long_summary'] for node in nodes]
     topic_names, topic_distr = get_topics(docs)
     res = {}
@@ -122,7 +122,7 @@ def topic_model():
     res["probs"] = {nodes[i]["id"]: topic_distr[i] for i in range(len(nodes))}
     return json.dumps(res)
 
-@app.route('/add_topics', methods=['POST'])
+@app.route('/add_topics', methods=['GET'])
 def addTopics():
     try:
         topics = request.json['topics']
