@@ -112,9 +112,9 @@ def cluster():
     clusters = cluster_nodes(nodes, 4)
     return json.dumps(clusters)
 
-@app.route('/topic_model', methods=['GET'])
+@app.route('/topic_model', methods=['POST'])
 def topic_model():
-    nodes = get_all_nodes()
+    nodes = request.json['nodes']
     docs = [node['long_summary'] for node in nodes]
     topic_names, topic_distr = get_topics(docs)
     res = {}
