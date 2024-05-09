@@ -8,11 +8,12 @@ Currently, you can run the server in two ways:
 1. Manually, with Python:
     * Install requirements: `pip install -r requirements.txt`
     * Unzip `data/topic_newshour.zip` in the `data` directory
+    * Run `python app.py` to start the server. It will be accessible at `localhost:5555`
     * Run the mmif visualizer in parallel for access to visualization. **The MMIF visualizer should be exposed to port 5000**
 
 2. Using Docker/Podman
 * docker-compose up will spin up the Graph Visualizer and the MMIF visualizer, and connect them via a network.
-* **WARNING**: Because the project contains a significant amount of networking, building the container may take a while, and will almost certainly crash before building the containers. I have not been able to debug this -- running the files locally using your own distribution of Python is likely the most efficient and accessible way to start the service.
+* **WARNING**: Because the project contains a significant amount of modeling requirements and networking, building the container may take a while, and on my hardware has consistently crashed before completing. I have not been able to debug this -- running the files locally using your own distribution of Python is likely the most efficient and accessible way to start the service.
 
 ## Directory Structure
 
