@@ -111,7 +111,7 @@ function handleClick(d, i) {
 }
 
 function searchEntity(entity) {
-  searchFilter({value: entity, field: "all"}, section=`cloud_${entity}`);
+  searchFilter({value: entity, field: "entity"}, section=`cloud_${entity}`);
 }
 
 function removeEntitySearch(entity) {

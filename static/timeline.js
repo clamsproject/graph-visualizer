@@ -5,10 +5,10 @@ function drawTimeline() {
     console.log("Rendering timeline...")
     dates = nodes.map(d => {
         const dateString = Date.parse(d.date);
-        if (isNaN(dateString)) return null;
+        if (isNaN(dateString) || (dateString === -1)) return null;
         const date = new Date(dateString);
         return date.getFullYear();
-    });
+    }).filter(n => n);
 
     const startYear = Math.min(...dates)-1;
     const endYear = Math.max(...dates)+1;

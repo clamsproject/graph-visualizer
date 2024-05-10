@@ -55,4 +55,5 @@ def get_descriptions():
     print(f"Finished getting descriptions. Dataset now contains {len(df)} instances.")
 
 if __name__ == "__main__":
+    get_transcripts()
     get_descriptions()

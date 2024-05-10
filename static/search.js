@@ -20,6 +20,12 @@ function updateGraphSearch() {
 
             }
 
+            else if (v.field == "entity") {
+                if (mmifNode.entities.includes(hoveredEntity)) {
+                    matches++;
+                }
+            }
+
             else if (v.field == "date") {
                 nodeYear = new Date(mmifNode.date).getFullYear();
                 if (v.value.includes(nodeYear)) {
