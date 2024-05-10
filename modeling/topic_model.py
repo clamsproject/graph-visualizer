@@ -23,8 +23,12 @@ from sentence_transformers import SentenceTransformer
 device = torch.device("cuda:0" if torch.cuda.is_available() and torch.cuda.mem_get_info()[1] > 4000000000 
                                else "cpu")
 
-topic_model = BERTopic.load(os.path.abspath(os.path.join(os.path.dirname(__file__), "../data/topic_newshour")))
-print("Loaded pretrained topic model.")
+try:
+    topic_model = BERTopic.load(os.path.abspath(os.path.join(os.path.dirname(__file__), "../data/topic_newshour")))
+    print("Loaded pretrained topic model.")
+except Exception as e:
+    print("WARNING: failed to load pre-trained topic model. Topic modeling will not work in the visualization.")
+
 
 def get_topics(docs):
     print("Getting topics...")
@@ -138,7 +142,7 @@ if __name__ == "__main__":
     data = pd.read_csv(os.path.join(os.path.dirname(__file__), "../data/transcripts.csv"))
     data = data.dropna()
 
-    # topic_model, data = train_topic_model()
+    topic_model, data = train_topic_model()
     coherence = get_coherence(topic_model, data['transcript'][:1000] if len(data) > 1000 else data['transcript'])
     print(topic_model.get_topic_info()["Name"])
 

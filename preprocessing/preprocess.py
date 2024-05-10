@@ -11,7 +11,7 @@ import time
 
 tqdm.pandas()
 
-TRANSCRIPT_PATH = "/llc_data/clams/wgbh/newshour-transcripts"
+TRANSCRIPT_PATH = "/llc_data/clams/wgbh/newshour-transcripts/NewsHour-200304/transcript"
 
 def is_json(x):
     return x[0] == "{" or x[0] == "["
