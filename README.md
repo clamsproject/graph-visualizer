@@ -1,6 +1,8 @@
 # MMIF Graph Visualizer
 
-This repository hosts the code for the Graph Visualizer, a collection-level visualizer for [MMIF](https://mmif.clams.ai/) files which renders MMIF files as nodes in a D3 force-directed graph. For more information, read the project report in the `doc` directory.
+This repository hosts the code for the Graph Visualizer, a collection-level visualizer for [MMIF](https://mmif.clams.ai/) files which renders MMIF files as nodes in a D3 force-directed graph.
+
+![screenshot](https://github.com/haydenmccormick/graph-visualizer/assets/74222796/a32f5379-e463-4af9-8dc9-d78206f79aa2)
 
 ## Quick Start
 
@@ -20,9 +22,6 @@ Currently, you can run the server in two ways:
 This project is heavily centered around client-side Javascript code, with Python used for backend modeling. The directory structure is as follows:
 
     - README.md
-    - doc                           
-        - project_report.md
-          [Main project report and specification]
     - data
         - topic_newshour.zip
           [The saved weights of the topic model trained on NewsHour transcripts]
@@ -34,15 +33,18 @@ This project is heavily centered around client-side Javascript code, with Python
       [Implementation of transformer question-generation for visualization eval]
     - static
           [implementations of different interactive page elements]
-        - cloud.js [Interactive word cloud]
-        - cluster.js [K-means cluster visualization]
-        - filter-panel.js [Side panel for filtering nodes]
-        - graph.js [Base code for rendering the d3 force-directed graph]
-        - search.js [Search/filter functionality across visualizations]
-        - timeline.js [Interactive custom timeline of documents]
-        - tooltip.js [Interactive tooltips when MMIF nodes are clicked]
-        - topic-model.js [Like cluster.js, implements topic modeling visualizations]
-        - styles.css [self-explanatory]
+        - constants
+           - styles.css
+           - favicon.ico
+        - scripts
+           - cloud.js [Interactive word cloud]
+           - cluster.js [K-means cluster visualization]
+           - filter-panel.js [Side panel for filtering nodes]
+           - graph.js [Base code for rendering the d3 force-directed graph]
+           - search.js [Search/filter functionality across visualizations]
+           - timeline.js [Interactive custom timeline of documents]
+           - tooltip.js [Interactive tooltips when MMIF nodes are clicked]
+           - topic-model.js [Like cluster.js, implements topic modeling visualizations]
     -modeling
         - cluster.py [K-means clustering implementation]
         - date.py [Date scraping]
