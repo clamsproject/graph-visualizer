@@ -6,6 +6,7 @@ function searchFilter(query, section) {
 
 function updateGraphSearch() {
     let matches = {};
+    console.log(queries);
     for (mmifNode of nodes) {
         matches = 0;
         for (const [k, v] of Object.entries(queries)) {    
@@ -21,7 +22,7 @@ function updateGraphSearch() {
             }
 
             else if (v.field == "entity") {
-                if (mmifNode.entities.includes(hoveredEntity)) {
+                if (mmifNode.entities.includes(v.value)) {
                     matches++;
                 }
             }
