@@ -13,15 +13,12 @@ from modeling.date import extract_date
 
 from db import insert_data, get_all_data, delete_data
 import requests
-from flask import redirect, url_for
 from flask_cors import CORS
 
 app = Flask(__name__, static_url_path='/static')
 # Enable CORS for all routes
 CORS(app)
 
-# Get the absolute path to the static folder
-static_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
 
 @app.route('/')
 def index():
@@ -165,4 +162,4 @@ def visualize():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5555)
+    app.run(debug=False, port=5555)

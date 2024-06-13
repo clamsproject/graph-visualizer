@@ -7,16 +7,13 @@ function renderCloud() {
   var layout = d3.layout.cloud()
     .size([430, 300])
     .words(Object.keys(wordCounts).map(function(d) {
-      return { text: d, size: Math.sqrt(wordCounts[d] / maxCount) * 80, color: randomColor() };
+      return { text: d, size: Math.sqrt(wordCounts[d] / maxCount) * 70 - 20, color: randomColor() };
     }))
-    .padding(10)
-    // .rotate(function() { return ~~(Math.random() * 2) * 90; })
+    .padding(5)
     .rotate(0)
     .font("monospace")
     .fontSize(function(d) { return d.size; })
     .on("end", draw);
-
-  layout.start();
 
   function draw(words) {
     d3.select("#wordCloud").append("svg")
@@ -41,7 +38,9 @@ function renderCloud() {
       .text(function(d) { return d.text; });
   }
 
-  console.log("Done rendering cloud.")
+  // console.log("Done rendering cloud.")
+
+layout.start();
 }
 
 // Call the cloud layout function when the DOM is ready
@@ -73,7 +72,17 @@ function getAllDocWords() {
     }
   }
 
-  return [counts, max];
+  const top50 = Object.keys(counts)
+    .sort((a, b) => counts[b] - counts[a])
+    .slice(0, 50)
+    .reduce((obj, key) => {
+      obj[key] = counts[key];
+      return obj;
+    }, {});
+
+  // console.log(top50);
+
+  return [top50, max];
 }
 
 function handleMouseOver(d, i) {

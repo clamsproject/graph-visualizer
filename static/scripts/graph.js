@@ -41,6 +41,8 @@ const colorScale = d3.scaleLinear()
 let links;
 let link;
 
+let maxWeight = 0;
+
 function setLinks(manualLinks = null) {
     links = []
     if (!manualLinks) {
@@ -48,6 +50,7 @@ function setLinks(manualLinks = null) {
             for (let j = i + 1; j < nodes.length; j++) {
                 const sharedEntities = nodes[i].entities.slice(0,300).filter(entity => nodes[j].entities.includes(entity));
                 weight = ((sharedEntities.length*2)/(nodes[i].entities.length + nodes[j].entities.length))
+                if (weight * 100 > maxWeight) maxWeight = weight * 100;
                 if (weight*100 >= entitySlider.value && nodes[i].hidden == false && nodes[j].hidden == false) {
                     links.push({ source: nodes[i].id, 
                                  target: nodes[j].id, 

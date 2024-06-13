@@ -14,6 +14,7 @@ import numpy as np
 import networkx as nx
 from summarizer import Summarizer
 from torch.utils.data import Dataset
+from transformers import BartTokenizer, BartForConditionalGeneration
 
 tqdm.pandas()
 
@@ -26,9 +27,6 @@ device = torch.device("cuda:0" if torch.cuda.is_available() and torch.cuda.mem_g
 print(f"Using {device}")
 summarizer = pipeline(
     "summarization", model="facebook/bart-large-cnn", device=device)
-
-# model = BartForConditionalGeneration.from_pretrained("sshleifer/distilbart-xsum-12-6")
-# tokenizer = BartTokenizer.from_pretrained("sshleifer/distilbart-xsum-12-6")
 
 
 def url2posix(path):

@@ -52,7 +52,10 @@ nodesPromise.then(() => {
     const entityNumber = entitySlider.value == 1 ? "entity" : "entities";
     valueSpan = `<span style="color: #FF4A1C !important;">${entitySlider.value}%</span>`;
     $("#sliderText").html(`Draw links when nodes share ${valueSpan} of entities`);
-    bulmaSlider.attach();
+    entitySlider.setAttribute("max", maxWeight);
+    entitySlider.setAttribute("step", Math.floor(maxWeight/20));
+
+    entitySlider.attach();
 });
 
 
@@ -180,19 +183,3 @@ function updatePieChart() {
         // code to handle closing the panel
     }
 });
-
-// function disableFilterCard() {
-//   enabled = false;
-//   $(".card-header").addClass("has-background-grey-lighter");
-//   $(".card-header").addClass("has-text-grey");
-//   $("#returnButton").removeClass("inactive");
-// }
-
-// function enableFilterCard() {
-//   enabled = true;
-//   $(".card-header").removeClass("has-background-grey-lighter");
-//   $(".card-header").removeClass("has-text-grey");
-//   $("#returnButton").addClass("inactive");
-//   $(".card-header").click();
-//   updateGraph();
-// }

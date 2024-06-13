@@ -59,7 +59,7 @@ body, html {
   position: absolute;
   top: 20px;
   right: 10px;
-  /* height: 90%; */
+  min-height: 75%;
   max-height: 95%;
   z-index: 1;
   width: 30%;
