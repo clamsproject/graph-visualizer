@@ -7,5 +7,5 @@ nlp = spacy.load("en_core_web_sm")
 def get_entities(sentence):
     print("Getting entities")
     doc = nlp(sentence)
-    entities = [ent.text for ent in doc.ents if ent.label_ in ["PERSON", "ORG", "GPE", "LOC", "EVENT", "WORK_OF_ART", "LAW", "LANGUAGE", "NORP", "PRODUCT", "FAC", "DATE"]]
+    entities = [ent for ent in doc.ents if ent.label_ in ["PERSON", "ORG", "GPE", "LOC", "EVENT", "WORK_OF_ART", "LAW", "LANGUAGE", "NORP", "PRODUCT", "FAC", "DATE"]]
     return entities

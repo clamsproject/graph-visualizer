@@ -1,7 +1,7 @@
 from bertopic import BERTopic
 import pandas as pd
 from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
+from nltk.tokenize import word_tokenize, sent_tokenize
 import nltk
 from bertopic.representation import KeyBERTInspired
 from hdbscan import HDBSCAN
@@ -32,6 +32,15 @@ except Exception as e:
 
 def get_topics(docs):
     print("Getting topics...")
+    # Flatten list and split into sliding window n-grams.
+    # This is so the topic model has more information to train on. This works
+    # in this case, since the long summaries generally contain many different
+    # topics that vary from sentence to sentence.
+    flattened_docs = "".join([doc for sublist in docs for doc in sublist])
+    # flattened_docs = preprocess(flattened_docs)
+    sentences = sent_tokenize(flattened_docs)
+    three_sent_ngrams = [" ".join(sentences[i:i+3]) for i in range(len(sentences)-2)]
+    topic_model, _ = train_topic_model(docs=three_sent_ngrams)
     probs, _ = topic_model.approximate_distribution(docs)
 
     # Normalize for better visualization
@@ -52,39 +61,47 @@ def remove_speaker_names(text):
         return ":".join(speaker_split[1:])
     return text
 
-def train_topic_model(zeroshot_topics = []):
+def train_topic_model(zeroshot_topics = [], docs = None):
     """
     Train zero-shot topic model. If no zero-shot topics are specified, this is a standard topic model.
     """
     # max_df to filter out extremely common words, and min_df to filter out rare but influential words
     # like names
+    # vectorizer_model = TfidfVectorizer(stop_words='english')
     vectorizer_model = TfidfVectorizer(max_df=0.99, min_df=0.6, stop_words='english')
     ctfidf_model = ClassTfidfTransformer(reduce_frequent_words=True)
     representation_model = MaximalMarginalRelevance(diversity=0.015)
 
+    hdbscan_model = HDBSCAN(min_cluster_size=10, metric='euclidean', 
+                        cluster_selection_method='eom', prediction_data=True, min_samples=5)
+
     # Enable low_memory if you run out of memory
     topic_model = BERTopic(
-        vectorizer_model=vectorizer_model,
+        # vectorizer_model=vectorizer_model,
+        # ctfidf_model=ctfidf_model,
+        # hdbscan_model=hdbscan_model,
         zeroshot_topic_list=zeroshot_topics if zeroshot_topics else None,
         zeroshot_min_similarity=.5 if zeroshot_topics else None,
         # low_memory=True
     )
 
-    tqdm.pandas()
-    data = pd.read_csv(os.path.abspath(os.path.join(os.path.dirname(__file__), "../data/transcripts.csv")))
-    data = data.dropna()
-    print("removing speaker names...")
-    data["transcript"] = data["transcript"].progress_apply(remove_speaker_names)
+    if docs is None:
+        tqdm.pandas()
+        data = pd.read_csv(os.path.abspath(os.path.join(os.path.dirname(__file__), "../data/transcripts.csv")))
+        data = data.dropna()
+        print("removing speaker names...")
+        data["transcript"] = data["transcript"].progress_apply(remove_speaker_names)
+        docs = data["transcript"]
 
     print("Training topic model...")
-    topic_model.fit(data['transcript'])
-    topic_model.save(os.path.join(os.path.dirname(__file__), "../data/topic_newshour"))
+    topic_model.fit(docs)
+    # topic_model.save(os.path.join(os.path.dirname(__file__), "../data/topic_newshour"))
 
     print("Trained topic model.")
 
     print(topic_model.get_topic_info()["Name"])
 
-    return topic_model, data
+    return topic_model, docs
 
 
 def grid_search_topic_model(zeroshot_topics=[]):
