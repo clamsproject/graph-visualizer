@@ -6,7 +6,7 @@
     <title>Multi-File Upload</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
     <!-- Main stylesheet -->
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='constants/styles.css') }}">
 
     <script
     src="https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/bulma-quickview/dist/js/bulma-quickview.min.js"></script>
@@ -74,14 +74,20 @@
 
         const uploadButton = document.querySelector("#uploadBox button");
         uploadButton.onclick = async () => {
-          // TODO: Error handling
+          const timeStarted = new Date().getTime();
           for (let i=0; i<fileInput.files.length; i++) {
+            const timeElapsed = new Date().getTime() - timeStarted;
+            const timePerFile = timeElapsed / (i+1);
+            const timeRemaining = timePerFile * (fileInput.files.length - i);
+            const timeRemainingString = new Date(timeRemaining).toISOString().slice(11, 19);
             // Update progress bar
             $("#uploadProgress").val((i)/fileInput.files.length*100);
             if ($("#uploadProgressContainer").hasClass("invisible"))
                 $("#uploadProgressContainer").removeClass("invisible");
             $("#uploadProgressText").text(`${i}/${fileInput.files.length} uploaded.`);
-
+            if (timeRemainingString !== "00:00:00") {
+              $("#uploadProgressText").append(` Est. time remaining: ${timeRemainingString}`);
+            }
 
             const file = fileInput.files[i];
             const success = await fetchData(file);

@@ -290,15 +290,15 @@ function resetNodes() {
 
 function zoomed({ transform }) {
     svg.attr('transform', transform);
-    //   Text should disappear if zoomed out far enough
-    if (transform.k < 0.75) {
-        if (filenameCheckbox.checked) node.selectAll('text').style('display', 'none');
-        // node.selectAll('.tooltip').style('display', 'none');
-    }
-    else {
-        if (filenameCheckbox.checked) node.selectAll('text').style('display', 'block');
-        // node.selectAll('.tooltip').style('display', 'block');
-    }
+    // //   Text should disappear if zoomed out far enough
+    // if (transform.k < 0.75) {
+    //     if (filenameCheckbox.checked) node.selectAll('text').style('display', 'none');
+    //     // node.selectAll('.tooltip').style('display', 'none');
+    // }
+    // else {
+    //     if (filenameCheckbox.checked) node.selectAll('text').style('display', 'block');
+    //     // node.selectAll('.tooltip').style('display', 'block');
+    // }
 }
 
 function updateGraph(manualLinks=null) {

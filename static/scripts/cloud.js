@@ -48,6 +48,18 @@ nodesPromise.then(renderCloud);
 
 function getAllDocWords() {
   const wordSet = new Set();
+  // Common date entities that are not helpful
+  // (we want to keep "date" entities when running Spacy since they include 
+  // specific dates, but avoid unhelpful common ones like "today" or "week")
+  const unhelpfulEntities = [
+    "today", "yesterday", "tomorrow",
+    "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
+    "january", "february", "march", "april", "may", "june", "july", "august", "september", "october",
+    "november", "december",
+    "week", "month", "year",
+    "hour", "minute", "second",
+    "day", "the day", "days", "the days", "weeks", "months", "years", 
+  ]
   let max = 0;
 
   for (let i = 0; i < nodes.length; i++) {
@@ -67,6 +79,7 @@ function getAllDocWords() {
     if (nodes[i].hidden) continue;
 
     for (const entity of nodes[i].entities) {
+      if (unhelpfulEntities.includes(entity.toLowerCase())) continue;
       counts[entity]++;
       max = Math.max(max, counts[entity]);
     }

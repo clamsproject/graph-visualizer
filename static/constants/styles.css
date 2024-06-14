@@ -59,7 +59,6 @@ body, html {
   position: absolute;
   top: 20px;
   right: 10px;
-  min-height: 75%;
   max-height: 95%;
   z-index: 1;
   width: 30%;
@@ -151,7 +150,7 @@ body, html {
 }
 
 .dropzone {
-  border: 2px dashed #ccc;
+  border: 2px dashed #ccc !important;
   border-radius: 5px;
   padding: 20px;
 }
