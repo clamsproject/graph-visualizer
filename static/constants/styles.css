@@ -548,3 +548,11 @@ a {
   margin-right: 5px;
   cursor: pointer !important;
 }
+
+#nodeCountWrapper {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 10;
+  opacity: 0.75;
+}

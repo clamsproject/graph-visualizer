@@ -23,15 +23,23 @@ const page_height = window.innerHeight;
 const width = page_width;
 const height = page_height;
 
-let zoomBehavior = d3.zoom().on('zoom', zoomed);
+const zoom = d3.zoom();
 
-// Create the SVG container
-const svg = d3.select('#graphWrapper')
-  .append('svg')
-  .attr('width', width)
-  .attr('height', height)
-  .call(zoomBehavior)
-  .append('g');
+const x = width / 8;
+const y = height / 4;
+const scale = 0.5;
+
+const svg = d3.select("#graphWrapper")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .call(zoom.transform, d3.zoomIdentity.translate(x, y).scale(scale))
+    .call(zoom.on('zoom', (event) => {
+        console.log(nodes.length);
+        svg.attr('transform', event.transform);
+     }))
+    .append("g")
+    .attr('transform', `translate(${x}, ${y})scale(${scale})`);
 
 const colorScale = d3.scaleLinear()
     .domain([0, 1])
@@ -84,9 +92,11 @@ function setNodes() {
     $(".tooltip").remove(); // Remove existing tooltips
     $(".clusterSummary").remove();
 
+    visibleNodes = nodes.filter(d => !d.hidden);
+
     // Add the nodes as SVG circles and text
     node = svg.selectAll('.node')
-        .data(nodes.filter(d => !d.hidden))
+        .data(visibleNodes)
         .enter()
         .append('g') // Use a group to hold the circle, text, and tooltip
         .call(d3.drag()
@@ -127,6 +137,8 @@ function setNodes() {
             createTooltip(node, d, event); // Pass the node selection, data, and event
         }
     });
+
+    $("#nodeCountText").text(`${visibleNodes.length}/${nodes.length} Nodes`);
 
     return node
 }
@@ -286,19 +298,6 @@ function tick() {
 function resetNodes() {
     node.select('circle')
         .style('opacity', 1);
-}
-
-function zoomed({ transform }) {
-    svg.attr('transform', transform);
-    // //   Text should disappear if zoomed out far enough
-    // if (transform.k < 0.75) {
-    //     if (filenameCheckbox.checked) node.selectAll('text').style('display', 'none');
-    //     // node.selectAll('.tooltip').style('display', 'none');
-    // }
-    // else {
-    //     if (filenameCheckbox.checked) node.selectAll('text').style('display', 'block');
-    //     // node.selectAll('.tooltip').style('display', 'block');
-    // }
 }
 
 function updateGraph(manualLinks=null) {
