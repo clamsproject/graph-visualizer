@@ -110,21 +110,17 @@ def cluster():
 @app.route('/topic_model', methods=['POST'])
 def topic_model():
     nodes = request.json['nodes']
+    # May be None
+    zeroshot_topics = request.json.get('zeroshot_topics', [])
     docs = [node['long_summary'] for node in nodes]
-    topic_names, topic_distr = get_topics(docs)
+    # Pre-load all entities for more efficient topic model pre-processing
+    entities = set([entity.lower() for node in nodes for entity in node['entities']])
+    print("Zero-shot topics: ", zeroshot_topics)
+    topic_names, topic_distr = get_topics(docs=docs, entities=entities, zeroshot_topics=zeroshot_topics)
     res = {}
     res["names"] = topic_names
     res["probs"] = {nodes[i]["id"]: topic_distr[i] for i in range(len(nodes))}
     return json.dumps(res)
-
-@app.route('/add_topics', methods=['GET'])
-def addTopics():
-    try:
-        topics = request.json['topics']
-        train_topic_model(topics)
-        return topic_model()
-    except Exception as e:
-        return json.dumps({"error": e})
 
 @app.route('/summarize_all', methods=['GET'])
 def summarize_all():

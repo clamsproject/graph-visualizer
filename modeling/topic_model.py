@@ -17,7 +17,8 @@ import torch
 
 from bertopic import BERTopic
 from bertopic.representation import MaximalMarginalRelevance
-from sentence_transformers import SentenceTransformer
+
+from .ner import get_entities
 
 # If you have less than 4GB of VRAM, your computer will have a bad time running BERTopic
 device = torch.device("cuda:0" if torch.cuda.is_available() and torch.cuda.mem_get_info()[1] > 4000000000 
@@ -30,18 +31,40 @@ except Exception as e:
     print("WARNING: failed to load pre-trained topic model. Topic modeling will not work in the visualization.")
 
 
-def get_topics(docs):
+def preprocess(text, entities):
+    """
+    Preprocess text for topic modelling by removing named entities and stop words
+    """
+    entities = [entity.lower() for entity in entities]
+    # Split multi-word entities
+    entities = [entity for expression in entities for entity in expression.split()]
+    return " ".join([word for word in word_tokenize(text) \
+                     if word.lower() not in entities \
+                     and word.lower() not in stopwords.words("english")])
+
+
+def get_topics(docs, entities=[], zeroshot_topics=[]):
     print("Getting topics...")
     # Flatten list and split into sliding window n-grams.
     # This is so the topic model has more information to train on. This works
     # in this case, since the long summaries generally contain many different
     # topics that vary from sentence to sentence.
     flattened_docs = "".join([doc for sublist in docs for doc in sublist])
-    # flattened_docs = preprocess(flattened_docs)
+    flattened_docs = preprocess(flattened_docs, entities)
     sentences = sent_tokenize(flattened_docs)
     three_sent_ngrams = [" ".join(sentences[i:i+3]) for i in range(len(sentences)-2)]
-    topic_model, _ = train_topic_model(docs=three_sent_ngrams)
-    probs, _ = topic_model.approximate_distribution(docs)
+    print(f"Training on {len(three_sent_ngrams)} n-grams.")
+    # We want the zero-shot topics to show up in the graph view, even if very few
+    # documents are classified under those topics. To avoid having to lower the
+    # zeroshot_min_similarity threshold too much while still keeping zeroshot
+    # topics, we add temp "dummy" documents guranteed to be classified under the
+    # zeroshot topics during training (in practice this seems to work very well).
+    if zeroshot_topics:
+        three_sent_ngrams += [(topic + " ") * 10 for topic in zeroshot_topics]
+
+    has_zeroshot = len(zeroshot_topics) > 0
+    topic_model, _ = train_topic_model(docs=three_sent_ngrams, zeroshot_topics=zeroshot_topics)
+    probs, _ = topic_model.approximate_distribution(docs, use_embedding_model=has_zeroshot)
 
     # Normalize for better visualization
     print("Normalizing...")
@@ -52,16 +75,8 @@ def get_topics(docs):
     topic_names = {topic: name for topic, name in zip(topic_info["Topic"], topic_info["Name"])}
     return topic_names, probs.tolist()
 
-def remove_speaker_names(text):
-    """
-    Helper function to remove speaker names from text. (e.g. JIM LEHRER: ...)
-    """
-    speaker_split = text.split(":")
-    if len(speaker_split) > 1 and len(speaker_split[0]) < 30:
-        return ":".join(speaker_split[1:])
-    return text
 
-def train_topic_model(zeroshot_topics = [], docs = None):
+def train_topic_model(docs, zeroshot_topics = []):
     """
     Train zero-shot topic model. If no zero-shot topics are specified, this is a standard topic model.
     """
@@ -81,21 +96,12 @@ def train_topic_model(zeroshot_topics = [], docs = None):
         # ctfidf_model=ctfidf_model,
         # hdbscan_model=hdbscan_model,
         zeroshot_topic_list=zeroshot_topics if zeroshot_topics else None,
-        zeroshot_min_similarity=.5 if zeroshot_topics else None,
+        zeroshot_min_similarity=.65 if zeroshot_topics else None,
         # low_memory=True
     )
 
-    if docs is None:
-        tqdm.pandas()
-        data = pd.read_csv(os.path.abspath(os.path.join(os.path.dirname(__file__), "../data/transcripts.csv")))
-        data = data.dropna()
-        print("removing speaker names...")
-        data["transcript"] = data["transcript"].progress_apply(remove_speaker_names)
-        docs = data["transcript"]
-
     print("Training topic model...")
     topic_model.fit(docs)
-    # topic_model.save(os.path.join(os.path.dirname(__file__), "../data/topic_newshour"))
 
     print("Trained topic model.")
 
@@ -114,7 +120,7 @@ def grid_search_topic_model(zeroshot_topics=[]):
     data = pd.read_csv(os.path.join(os.path.dirname(__file__), "../data/transcripts.csv"))
     data = data.dropna()
     print("removing speaker names...")
-    data["transcript"] = data["transcript"].progress_apply(remove_speaker_names)
+    data["transcript"] = data["transcript"].progress_apply(preprocess)
 
     # Define the parameter grid
     param_grid = {
@@ -151,16 +157,34 @@ def grid_search_topic_model(zeroshot_topics=[]):
 
 
 if __name__ == "__main__":
-    from eval.topic import get_coherence
+    # from eval.topic import get_coherence
 
-    # best_model, data = grid_search_topic_model()
-    # print(best_model.get_topic_info()["Name"])
+    # # best_model, data = grid_search_topic_model()
+    # # print(best_model.get_topic_info()["Name"])
 
-    data = pd.read_csv(os.path.join(os.path.dirname(__file__), "../data/transcripts.csv"))
-    data = data.dropna()
+    # data = pd.read_csv(os.path.join(os.path.dirname(__file__), "../data/transcripts.csv"))
+    # data = data.dropna()
 
-    topic_model, data = train_topic_model()
-    coherence = get_coherence(topic_model, data['transcript'][:1000] if len(data) > 1000 else data['transcript'])
-    print(topic_model.get_topic_info()["Name"])
+    # topic_model, data = train_topic_model()
+    # coherence = get_coherence(topic_model, data['transcript'][:1000] if len(data) > 1000 else data['transcript'])
+    # print(topic_model.get_topic_info()["Name"])
 
-    print(f"Topic Model Coherence: {coherence}")
+    # print(f"Topic Model Coherence: {coherence}")
+
+    from datasets import load_dataset
+
+    dataset = load_dataset("CShorten/ML-ArXiv-Papers")["train"]
+    docs = dataset["abstract"][:5_000]
+
+    # We define a number of topics that we know are in the documents
+    zeroshot_topic_list = ["Clustering", "Topic Modeling", "Large Language Models"]
+
+    topic_model = BERTopic(
+        embedding_model="thenlper/gte-small", 
+        min_topic_size=15,
+        zeroshot_topic_list=zeroshot_topic_list,
+        zeroshot_min_similarity=.85,
+        representation_model=KeyBERTInspired()
+    )
+    topic_model.fit(docs)  
+    probs, _ = topic_model.approximate_distribution(docs, use_embedding_model=True)  

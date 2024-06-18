@@ -1,16 +1,6 @@
-// function resetZoom() {
-//     const desiredZoomLevel = 0.5;
-//     const currentTransform = d3.zoomTransform(svg.node());
-//     console.log('Current transform:', currentTransform);
-//     svg.transition().duration(750).call(zoomBehavior.transform, d3.zoomIdentity.scale(desiredZoomLevel).translate(width/2,height/2));
-//     const newTransform = d3.zoomTransform(svg.node());
-//     console.log('New transform:', newTransform);
 
-//     zoomBehavior.translateBy(svg.transition().duration(750), 0, 0);
-//     zoomBehavior.scaleBy(svg.transition().duration(750), desiredZoomLevel);  
-//   }
   
-$(".topicModelButton").click(function () {
+  $(".topicModelButton").click(function () {
     if ($(this).hasClass("untopicmodeled")) {
         topicModel();
         $(this).removeClass("untopicmodeled");
@@ -356,15 +346,19 @@ $("#submitTopics").click(function(){
     }
     hideTopicMenu();
     showProgressBar();
-    fetch('/add_topics', {
+    fetch('/topic_model', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({topics: topicList})
+        body: JSON.stringify({
+            zeroshot_topics: topicList,
+            nodes: nodes
+        })
     })
     .then(response => response.json())
     .then(data => {
+        $("#topicChartButton").removeClass("inactive");
         hideProgressBar();
         setTopicData(data);
     });

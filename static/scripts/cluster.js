@@ -92,7 +92,7 @@ function showClusterExplanations() {
 }
 
 
-
+// TODO: Hover dimming cluster centers
 const clusterCenterHTML = `
     <div class="cluster-center">Cluster center</div>
 `

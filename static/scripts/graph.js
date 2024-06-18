@@ -35,7 +35,6 @@ const svg = d3.select("#graphWrapper")
     .attr("height", height)
     .call(zoom.transform, d3.zoomIdentity.translate(x, y).scale(scale))
     .call(zoom.on('zoom', (event) => {
-        console.log(nodes.length);
         svg.attr('transform', event.transform);
      }))
     .append("g")
