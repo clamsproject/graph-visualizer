@@ -127,6 +127,7 @@ function createTooltip(nodeSelection, d, event) {
 function createSummaryTooltip(selectedCircle, summary, event) {
     const tooltipWidth = 300;
     const tooltipHeight = 400;
+    
 
     // Remove existing tooltip for the clicked node
     // nodeSelection.filter(data => data.id === d.id).select('.tooltip').remove();

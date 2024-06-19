@@ -24,11 +24,11 @@ from .ner import get_entities
 device = torch.device("cuda:0" if torch.cuda.is_available() and torch.cuda.mem_get_info()[1] > 4000000000 
                                else "cpu")
 
-try:
-    topic_model = BERTopic.load(os.path.abspath(os.path.join(os.path.dirname(__file__), "../data/base_topic")))
-    print("Loaded pretrained topic model.")
-except Exception as e:
-    print("WARNING: failed to load pre-trained topic model. Topic modeling will not work in the visualization.")
+# try:
+#     topic_model = BERTopic.load(os.path.abspath(os.path.join(os.path.dirname(__file__), "../data/base_topic")))
+#     print("Loaded pretrained topic model.")
+# except Exception as e:
+#     print("WARNING: failed to load pre-trained topic model. Topic modeling will not work in the visualization.")
 
 
 def preprocess(text, entities):

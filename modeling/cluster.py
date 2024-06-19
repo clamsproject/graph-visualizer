@@ -25,8 +25,16 @@ def cluster_nodes(nodes, n_clusters, embeddings=None):
         embeddings = np.array(model.encode(summaries))
     print("Fitting KMeans...")
     kmeans = KMeans(n_clusters=n_clusters)
-    kmeans.fit(embeddings)
+    distances = kmeans.fit_transform(embeddings)
     print("Assigning clusters...")
     for i, node in tqdm(enumerate(nodes)):
         node['cluster'] = int(kmeans.labels_[i])
+        node['centroid_distance'] = distances[i][node['cluster']].item()
+        node['is_representative'] = False
+    for cluster_num in range(n_clusters):
+        cluster_nodes = [node for node in nodes if node['cluster'] == cluster_num]
+        centroid_distances = np.array([node['centroid_distance'] for node in cluster_nodes])
+        lowest_distances = centroid_distances.argsort()[:5]
+        for i in lowest_distances:
+            cluster_nodes[i]['is_representative'] = True
     return nodes

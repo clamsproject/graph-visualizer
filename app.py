@@ -135,7 +135,8 @@ def summarize_clusters():
     nodes = request.json['nodes']
     n_clusters = max([node['cluster'] for node in nodes]) + 1
     cluster_texts = [" ".join([node['summary'] for node in nodes if node['cluster'] == i]) for i in range(n_clusters)]
-    cluster_summaries = [summarize_from_text(cluster_text)[1] for cluster_text in cluster_texts]
+    cluster_summaries = [summarize_from_text(cluster_text)[0] for cluster_text in cluster_texts]
+    # return summarize_from_text(" ".join(cluster_summaries)
     return cluster_summaries
 
 @app.route('/visualize', methods=['POST'])

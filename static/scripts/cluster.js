@@ -64,12 +64,14 @@ function showClusterExplanations() {
     // showProgressBar();
     $("#clusterExplanationButton").addClass("is-loading")
     nodeCopy = [ ...nodes ];
-    nodeCopy = nodeCopy.map(d => {
-        return {
-                id: d.id,
-                summary: d.summary,
-                cluster: d.cluster
-               }
+    nodeCopy = nodeCopy
+        .filter(d => d.is_representative)
+        .map(d => {
+            return {
+                    id: d.id,
+                    summary: d.summary,
+                    cluster: d.cluster,
+                }
     })
     fetch("/summarize_clusters", {
         method: "POST",
@@ -172,6 +174,7 @@ function renderClusters(numClusters) {
 
         clusterCenters.append('circle')
             .attr('r', nodeRadius/2)
+            .attr('class', 'clusterCircle')
             .attr('fill', 'white')
             .attr('stroke', d => clusterColors[d.cluster])
             .append('text')
@@ -187,6 +190,11 @@ function renderClusters(numClusters) {
             const selectedCluster = selectedCircle.select(function() {
                 return this.parentNode;
             });
+            const hasTooltip = selectedCluster.select('.tooltip').size() > 0;
+
+            if (!selectedCircle.classed("clusterCircle") || hasTooltip) {
+                return;
+            }
 
             createSummaryTooltip(selectedCluster, clusterSummaries[d["cluster"]], event); // Pass the node selection, data, and event
         });
