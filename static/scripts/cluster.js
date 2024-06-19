@@ -33,7 +33,8 @@ function cluster() {
             $(".clusterButton").removeClass("is-loading");
             $("#clusterColorBox").removeAttr("disabled");
             hideProgressBar();
-            nodes = data;
+            nodes = data["nodes"];
+            numClusters = data["n_clusters"];
             clusterColors = getRandomColors(numClusters);
             // clusterColors = ['#E3170A', '#A9E5BB', '#B38CB4', '#F7B32B']
             updateGraph();

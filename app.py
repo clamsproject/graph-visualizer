@@ -104,8 +104,9 @@ def upload():
 @app.route('/cluster', methods=['POST'])
 def cluster():
     nodes = request.json['nodes']
-    clusters = cluster_nodes(nodes, 4)
-    return json.dumps(clusters)
+    clusters, n_clusters = cluster_nodes(nodes)
+    data = {'nodes': clusters, 'n_clusters': n_clusters}
+    return json.dumps(data)
 
 @app.route('/topic_model', methods=['POST'])
 def topic_model():

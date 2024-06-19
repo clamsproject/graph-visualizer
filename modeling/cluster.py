@@ -1,4 +1,4 @@
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 import pandas as pd
 import ast
@@ -6,10 +6,11 @@ from nltk.tokenize import word_tokenize
 from sentence_transformers import SentenceTransformer
 import numpy as np
 from tqdm import tqdm
+from sklearn.metrics import silhouette_score
 
-model = SentenceTransformer('all-mpnet-base-v2')
+model = TfidfVectorizer(stop_words='english')
 
-def cluster_nodes(nodes, n_clusters, embeddings=None):
+def cluster_nodes(nodes, embeddings=None):
     """
     Cluster nodes using KMeans
 
@@ -21,11 +22,22 @@ def cluster_nodes(nodes, n_clusters, embeddings=None):
     if embeddings is None:
         print("Collecting summaries...")
         summaries = [node['summary'] for node in tqdm(nodes)]
-        print("Encoding summaries...")
-        embeddings = np.array(model.encode(summaries))
+        print("Encoding summaries...") 
+        embeddings = model.fit_transform(summaries)
+        print(embeddings.shape)
     print("Fitting KMeans...")
-    kmeans = KMeans(n_clusters=n_clusters)
-    distances = kmeans.fit_transform(embeddings)
+    kmeans_vals = []
+    sillhouettes = []
+    for i in range(2, 10):
+        kmeans = KMeans(n_clusters=i)
+        distances = kmeans.fit_transform(embeddings)
+        kmeans_vals.append(kmeans)
+        sillhouettes.append(silhouette_score(distances, kmeans.labels_))
+
+    kmeans = kmeans_vals[sillhouettes.index(max(sillhouettes))]
+    distances = kmeans.transform(embeddings)
+    n_clusters = len(kmeans.cluster_centers_)
+    
     print("Assigning clusters...")
     for i, node in tqdm(enumerate(nodes)):
         node['cluster'] = int(kmeans.labels_[i])
@@ -37,4 +49,4 @@ def cluster_nodes(nodes, n_clusters, embeddings=None):
         lowest_distances = centroid_distances.argsort()[:5]
         for i in lowest_distances:
             cluster_nodes[i]['is_representative'] = True
-    return nodes
+    return nodes, n_clusters
