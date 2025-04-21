@@ -21,9 +21,14 @@ tqdm.pandas()
 
 MAX_LEN = 1024 # Summarizer needs at least 4GB 
 
-device = torch.device("cuda:0" if torch.cuda.is_available() and torch.cuda.mem_get_info()[1] > 4000000000 
-                               else "cpu")
-print(f"Using {device}")
+if torch.cuda.is_available():
+    try:
+        free_memory = torch.cuda.mem_get_info()[1]
+        device = torch.device("cuda:0" if free_memory > 4000000000 else "cpu")
+    except:
+        device = torch.device("cpu")
+else:
+    device = torch.device("cpu")
 
 def generate_llm_summary(text, max_len=150):
     prompt = f"""Summarize the transcript in about {max_len} words.
@@ -108,7 +113,11 @@ def summarize_file(mmif: Mmif):
         asr_text = gold_transcript
     else:
         asr_views = get_asr_views(mmif)
+        if not asr_views:
+            return "No ASR views found in the MMIF file", "", ""
         asr_text = get_asr_text(asr_views[0])
+        if not asr_text:
+            return "No text found in ASR view", "", ""
     summary, long_summary = summarize_from_text(asr_text)
     return summary, long_summary, asr_text
 
@@ -118,26 +127,30 @@ def process_dataset_for_examples():
     """
     Instead of traditional fine-tuning, prepare examples for few-shot learning
     """
-    df = pd.read_csv("../data/descriptions.csv")
-    print("Processing dataset to create few-shot examples")
-    
-    # Select a subset of good examples
-    sample_df = df.sample(n=5)
-    examples = []
-    
-    for _, row in sample_df.iterrows():
-        example = {
-            "transcript": row["transcript"],
-            "summary": row["description"]
-        }
-        examples.append(example)
-    
-    # Save examples for later use with the LLM
-    with open("../data/few_shot_examples.json", "w") as f:
-        json.dump(examples, f)
-    
-    print(f"Saved {len(examples)} examples for few-shot learning")
-    return examples
+    try:
+        df = pd.read_csv("../data/descriptions.csv")
+        print("Processing dataset to create few-shot examples")
+        
+        # Select a subset of good examples
+        sample_df = df.sample(n=5)
+        examples = []
+        
+        for _, row in sample_df.iterrows():
+            example = {
+                "transcript": row["transcript"],
+                "summary": row["description"]
+            }
+            examples.append(example)
+        
+        # Save examples for later use with the LLM
+        with open("../data/few_shot_examples.json", "w") as f:
+            json.dump(examples, f)
+        
+        print(f"Saved {len(examples)} examples for few-shot learning")
+        return examples
+    except Exception as e:
+        print(f"Error processing dataset: {e}")
+        return []
 
 
 if __name__ == "__main__":
@@ -158,8 +171,11 @@ if __name__ == "__main__":
         
        
         print("Generating summary...")
-        summary, full_text = summarize_from_text(transcript)
-        print("\nSummary:")
-        print(summary)
-    else:
-        print("Please provide a path to a transcript file.")
+        try:
+            summary, full_text = summarize_from_text(transcript)
+            print("\nSummary:")
+            print(summary)
+        except Exception as e:
+            print(f"Error generating summary: {e}")
+            sys.exit(1)
+    

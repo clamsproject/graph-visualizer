@@ -165,4 +165,4 @@ nodedatabase.db
 data/*
 upload_all.py
 eval/*
-logs/*
+logs/*.DS_Store
