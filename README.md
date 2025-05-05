@@ -1,21 +1,39 @@
 # MMIF Graph Visualizer
 
-This repository hosts the code for the Graph Visualizer, a collection-level visualizer for [MMIF](https://mmif.clams.ai/) files which renders MMIF files as nodes in a D3 force-directed graph.
+This repository uses the Gemma3 model from Ollama to summarize transcripts in MMIF (https://mmif.clams.ai/) files. 
+
 
 ![screenshot](https://github.com/haydenmccormick/graph-visualizer/assets/74222796/a32f5379-e463-4af9-8dc9-d78206f79aa2)
 
 ## Quick Start
 
-Currently, you can run the server in two ways:
-1. Manually, with Python:
-    * Install requirements: `pip install -r requirements.txt`
-    * Unzip `data/topic_newshour.zip` in the `data` directory
-    * Run `python app.py` to start the server. It will be accessible at `localhost:5555`
-    * Run the mmif visualizer in parallel for access to visualization. **The MMIF visualizer should be exposed to port 5000**
+1. Prerequisites:
+Before running the script, ensure you have the following installed:
+a. Python 3.8+ (recommended to use a virtual environment)
+b. Ollama – for running the gemma3 model locally
+c. Torch – for text processing (if needed by any preprocessing logic)
+d. MMIF-Python – for working with MMIF files
 
-2. Using Docker/Podman
-* docker-compose up will spin up the Graph Visualizer and the MMIF visualizer, and connect them via a network.
-* **WARNING**: Because the project contains a significant amount of modeling requirements and networking, building the container may take a while, and on my hardware has consistently crashed before completing. I have not been able to debug this -- running the files locally using your own distribution of Python is likely the most efficient and accessible way to start the service.
+2. Installation
+a. Clone the repository and install dependencies:
+```bash
+git clone https://github.com/your-username/clams-transcript-summarizer.git
+cd clams-transcript-summarizer
+pip install -r requirements.txt
+
+b. Make sure the Ollama app is running, and the Gemma3 model is available:
+```bash
+ollama run gemma3
+
+3. Usage:
+Run the summarizer with an MMIF file that includes ASR transcript data:
+
+```bash
+python3 summarize.py /path/to/your/transcript_file.json
+
+
+
+
 
 ## Directory Structure
 
@@ -50,8 +68,8 @@ This project is heavily centered around client-side Javascript code, with Python
         - date.py [Date scraping]
         - get_descriptions.py [Description scraping from AAPB API]
         - ner.py [Spacy named entity extraction]
-        - summarize.py [Abstractive summarization using BART]
-        - topic_model.py [Topic modelling using BERTopic]
+        - summarize.py [Abstractive summarization using Gemma3]
+        - topic_model.py [Topic modelling using Gemma3]
     - preprocessing/preprocess.py [functions for building description dataset]
     - templates
         - index.html
