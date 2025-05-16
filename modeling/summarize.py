@@ -15,21 +15,34 @@ import requests
 import json
 import sys
 import os
+import argparse 
 
 
 tqdm.pandas()
 
 MAX_LEN = 1024 # Summarizer needs at least 4GB 
 
-if torch.cuda.is_available():
-    try:
-        free_memory = torch.cuda.mem_get_info()[1]
-        device = torch.device("cuda:0" if free_memory > 4000000000 else "cpu")
-    except:
-        device = torch.device("cpu")
-else:
-    device = torch.device("cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() and torch.cuda.mem_get_info()[1] > 4000000000 else "cpu")
+print(f"Using device: {device}")
 
+# Transformer-based Summarizer 
+def load_transformer():
+    from transformers import pipeline
+    return pipeline("summarization", model="facebook/bart-large-cnn", device=device)
+
+def generate_abstractive_summary(asr_text: str, summarizer, max_len=150):
+    min_len = 30 if max_len > 30 else int(max_len/2)
+    return summarizer(asr_text, max_length=max_len, min_length=min_len, do_sample=False)[0]['summary_text']
+
+def summarize_transformer(asr_text: str):
+    summarizer = load_transformer()
+    if len(asr_text) > MAX_LEN:
+        chunks = [asr_text[i:i+MAX_LEN] for i in range(0, len(asr_text), MAX_LEN)]
+        summaries = [generate_abstractive_summary(chunk, summarizer, max_len=int(math.floor(MAX_LEN/len(chunks)))) for chunk in tqdm(chunks)]
+        asr_text = " ".join(summaries)
+    return generate_abstractive_summary(asr_text, summarizer), asr_text
+
+#  LLM Summarizer 
 def generate_llm_summary(text, max_len=150):
     prompt = f"""Summarize the transcript in about {max_len} words.
     
@@ -107,7 +120,7 @@ def summarize_from_text(asr_text: str):
 
 
 
-def summarize_file(mmif: Mmif):
+def summarize_file(mmif: Mmif,method: str):
     gold_transcript = get_transcript(mmif)
     if gold_transcript:
         asr_text = gold_transcript
@@ -118,9 +131,13 @@ def summarize_file(mmif: Mmif):
         asr_text = get_asr_text(asr_views[0])
         if not asr_text:
             return "No text found in ASR view", "", ""
-    summary, long_summary = summarize_from_text(asr_text)
-    return summary, long_summary, asr_text
-
+    
+    if method == "llm":
+        return summarize_llm(asr_text) + (asr_text,)
+    elif method == "transformer":
+        return summarize_transformer(asr_text) + (asr_text,)
+    else:
+        raise ValueError("Invalid summarization method")
 
 
 def process_dataset_for_examples():
@@ -154,28 +171,29 @@ def process_dataset_for_examples():
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        input_file = sys.argv[1]
-        
-        if not os.path.exists(input_file):
-            print(f"Error: Input file '{input_file}' not found.")
-            sys.exit(1)
-        
-        print(f"Reading transcript from '{input_file}'...")
-        try:
-            with open(input_file, 'r', encoding='utf-8') as f:
-                transcript = f.read()
-        except Exception as e:
-            print(f"Error reading input file: {e}")
-            sys.exit(1)
-        
-       
-        print("Generating summary...")
-        try:
-            summary, full_text = summarize_from_text(transcript)
-            print("\nSummary:")
-            print(summary)
-        except Exception as e:
-            print(f"Error generating summary: {e}")
-            sys.exit(1)
+    parser = argparse.ArgumentParser(description="Summarize MMIF transcript using --llm or --transformer.")
+    parser.add_argument("--llm", action="store_true", help="Use LLM (Gemma3) summarizer")
+    parser.add_argument("--transformer", action="store_true", help="Use Transformer (BART) summarizer")
+    parser.add_argument("input_file", type=str, help="Path to MMIF JSON file")
+    args = parser.parse_args()
+
+    if not os.path.exists(args.input_file):
+        print(f"Error: Input file '{args.input_file}' not found.")
+        sys.exit(1)
+
     
+    with open(args.input_file, 'r') as f:
+        mmif = Mmif(f.read())
+
+    
+    if args.llm:
+        method = "llm"
+    elif args.transformer:
+        method = "transformer"
+    else:
+        print("You must specify either --llm or --transformer")
+        sys.exit(1)
+
+    print("Generating summary...")
+    summary, long_summary, asr_text = summarize_file(mmif, method)
+    print("\nSummary:\n", summary)
