@@ -1,5 +1,6 @@
 from mmif import Mmif, View, AnnotationTypes, DocumentTypes
 from tqdm import tqdm
+import json
 import torch
 import math
 import pandas as pd
@@ -94,7 +95,9 @@ def get_asr_views(mmif: Mmif):
 def get_asr_text(asr_view: View):
     for annotation in asr_view.annotations:
         if annotation.at_type.shortname == "TextDocument":
-            return annotation.properties.get("text").value
+            text = annotation.properties.get("text")
+            return text if isinstance(text, str) else text.value
+
 
 
 def summarize_from_text(asr_text: str):
@@ -120,7 +123,7 @@ def summarize_from_text(asr_text: str):
 
 
 
-def summarize_file(mmif: Mmif,method: str):
+def summarize_file(mmif: Mmif, method: str):
     gold_transcript = get_transcript(mmif)
     if gold_transcript:
         asr_text = gold_transcript
@@ -133,9 +136,11 @@ def summarize_file(mmif: Mmif,method: str):
             return "No text found in ASR view", "", ""
     
     if method == "llm":
-        return summarize_llm(asr_text) + (asr_text,)
+        summary, long_summary = summarize_from_text(asr_text)
+        return summary, long_summary, asr_text
     elif method == "transformer":
-        return summarize_transformer(asr_text) + (asr_text,)
+        summary, long_summary = summarize_transformer(asr_text)
+        return summary, long_summary, asr_text
     else:
         raise ValueError("Invalid summarization method")
 
@@ -148,7 +153,6 @@ def process_dataset_for_examples():
         df = pd.read_csv("../data/descriptions.csv")
         print("Processing dataset to create few-shot examples")
         
-        # Select a subset of good examples
         sample_df = df.sample(n=5)
         examples = []
         
@@ -170,6 +174,14 @@ def process_dataset_for_examples():
         return []
 
 
+def is_mmif(content):
+    try:
+        obj = json.loads(content)
+        return "@type" in obj and "MMIF" in obj["@type"]
+    except json.JSONDecodeError:
+        return False
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Summarize MMIF transcript using --llm or --transformer.")
     parser.add_argument("--llm", action="store_true", help="Use LLM (Gemma3) summarizer")
@@ -181,11 +193,6 @@ if __name__ == "__main__":
         print(f"Error: Input file '{args.input_file}' not found.")
         sys.exit(1)
 
-    
-    with open(args.input_file, 'r') as f:
-        mmif = Mmif(f.read())
-
-    
     if args.llm:
         method = "llm"
     elif args.transformer:
@@ -194,6 +201,22 @@ if __name__ == "__main__":
         print("You must specify either --llm or --transformer")
         sys.exit(1)
 
+    with open(args.input_file, "r") as f:
+        content = f.read()
+
     print("Generating summary...")
-    summary, long_summary, asr_text = summarize_file(mmif, method)
+    
+    if is_mmif(content):
+        mmif = Mmif(content)
+        summary, long_summary, asr_text = summarize_file(mmif, method)
+    else:
+       
+        if method == "llm":
+            summary, long_summary = summarize_from_text(content)
+        elif method == "transformer":
+            summary, long_summary = summarize_transformer(content)
+        else:
+            raise ValueError("Invalid summarization method")
+        asr_text = content  
+
     print("\nSummary:\n", summary)
