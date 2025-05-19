@@ -1,21 +1,11 @@
 # MMIF Graph Visualizer
 
-This repository hosts the code for the Graph Visualizer, a collection-level visualizer for [MMIF](https://mmif.clams.ai/) files which renders MMIF files as nodes in a D3 force-directed graph.
+This repository uses the Gemma3 model from Ollama to summarize transcripts in MMIF (https://mmif.clams.ai/) files. 
+
 
 ![screenshot](https://github.com/haydenmccormick/graph-visualizer/assets/74222796/a32f5379-e463-4af9-8dc9-d78206f79aa2)
 
-## Quick Start
 
-Currently, you can run the server in two ways:
-1. Manually, with Python:
-    * Install requirements: `pip install -r requirements.txt`
-    * Unzip `data/topic_newshour.zip` in the `data` directory
-    * Run `python app.py` to start the server. It will be accessible at `localhost:5555`
-    * Run the mmif visualizer in parallel for access to visualization. **The MMIF visualizer should be exposed to port 5000**
-
-2. Using Docker/Podman
-* docker-compose up will spin up the Graph Visualizer and the MMIF visualizer, and connect them via a network.
-* **WARNING**: Because the project contains a significant amount of modeling requirements and networking, building the container may take a while, and on my hardware has consistently crashed before completing. I have not been able to debug this -- running the files locally using your own distribution of Python is likely the most efficient and accessible way to start the service.
 
 ## Directory Structure
 
@@ -50,8 +40,8 @@ This project is heavily centered around client-side Javascript code, with Python
         - date.py [Date scraping]
         - get_descriptions.py [Description scraping from AAPB API]
         - ner.py [Spacy named entity extraction]
-        - summarize.py [Abstractive summarization using BART]
-        - topic_model.py [Topic modelling using BERTopic]
+        - summarize.py [Abstractive summarization using Gemma3]
+        - topic_model.py [Topic modelling using Gemma3]
     - preprocessing/preprocess.py [functions for building description dataset]
     - templates
         - index.html
@@ -60,6 +50,47 @@ This project is heavily centered around client-side Javascript code, with Python
           [A batch uploader accessible at localhost:5555/upload]
     - tmp
       [Directory for storing intermediate MMIF files before they are passed to the visualizer]
+
+# Running the models: 
+1. Summarizer.py:
+* Features:
+- Support for two summarization methods:
+1. Transformer-based summarization using BART 
+2. LLM-based summarization using Gemma3 via Ollama (
+
+* Automatic handling of long transcripts by chunking and hierarchical summarization
+* Support for MMIF formatted files and raw transcript text files
+* Configurable summary length
+
+#Installation
+Prerequisites:
+1.Python 3
+2. CUDA-compatible GPU recommended for transformer model (but will work on CPU)
+
+#Setup
+
+1. Clone this repository:
+ git clone https://github.com/clamsproject/graph-visualizer
+cd transcript-summarizer
+
+2. Install the required dependencies
+
+3.If using the LLM method, install and set up Ollama:
+- Download and install Ollama 
+- Start the Ollama service:
+ollama serve
+- Pull the Gemma3 model:
+ollama pull gemma3
+
+
+#Usage
+The script can be run from the command line with the following arguments:
+bashpython3 summarize.py [--llm | --transformer] input_file.json
+
+Command-line Options
+--llm: Use the LLM-based summarization method (requires Ollama with Gemma3)
+--transformer: Use the transformer-based summarization method (using BART)
+input_file: Path to the input file (MMIF JSON or raw transcript)
 
 
 ## Visualizations
